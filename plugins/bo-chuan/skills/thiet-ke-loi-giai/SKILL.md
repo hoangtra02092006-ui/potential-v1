@@ -34,6 +34,7 @@ Vì vậy:
 - Với kiến trúc được đề xuất, luôn có bảng **lợi và hại**, cả trước mắt lẫn khi dự án lớn lên: tốc độ làm, thời gian build, độ dễ hiểu cho người mới, deploy, chi phí.
 - Ước lượng dự án sẽ lớn đến đâu (số chức năng, số người làm) từ yêu cầu, và chọn kiến trúc hợp với mức đó.
 - Ghi điều kiện để đổi sang kiến trúc khác khi bài toán thay đổi.
+- Bảng các kiểu kiến trúc, cách lập bản đồ module và sơ đồ tổng quan: xem `references/kieu-kien-truc.md`.
 
 ## 5. Chọn phương án
 **Agent chỉ đề xuất, người quản lý quyết.** Vấn đề nhạy cảm (công nghệ, kiến trúc, bảo mật, chi phí, dữ liệu khách) luôn để người quản lý chọn. Trình đề xuất kèm lý do, không viết như thể đã chốt.
@@ -51,15 +52,20 @@ Luôn ghi **ước lượng thời gian làm** và **cách chia việc cho agent
 
 ## 7. Đầu ra
 Lưu `docs/thiet-ke/<yyyymmdd>-<ten>.md`, gọn, gồm:
-1. **Cấu trúc dự án tổng quan:** chỉ frontend hay có backend (kèm lý do ở mục 2), các phần chính và cách chúng nối với nhau, cây thư mục chính.
+1. **Cấu trúc dự án tổng quan:** chỉ frontend hay có backend (kèm lý do ở mục 2). Sơ đồ 2 tầng: ai dùng và hệ thống ngoài; các phần chạy riêng (frontend, backend, database) và cách chúng gọi nhau. Có từ 2 nhóm chức năng trở lên thì thêm **bản đồ module** (module, lo việc gì, phụ thuộc một chiều). Cây thư mục chính.
 2. **Công nghệ đề xuất** kèm lý do (đề xuất, chờ người quản lý chọn).
 3. **Kiến trúc: lợi và hại** (mục 4).
 4. **Tổng quan giao diện:** danh sách màn hình, bố cục chính và thông tin trên từng màn, luồng đi giữa các màn. Đủ để người quản lý thấy giao diện có hài hoà và có đáp ứng nghiệp vụ không. Chi tiết màu, chữ, component để skill giao diện làm sau.
 5. **Dữ liệu chính:** các bảng hoặc đối tượng và quan hệ.
-6. **Hạn chế của thiết kế này** và hướng đi khác có thể cân nhắc. Không giấu điểm yếu.
-7. **Kế hoạch test:** mỗi tiêu chí trong yêu cầu ứng với test nào.
-8. **Ước lượng thời gian và cách chia việc cho agent** (mục 6).
+6. **Hợp đồng API** nếu có backend: danh sách endpoint, dữ liệu vào ra, kiểu lỗi chung. Xem `references/hop-dong-api.md`.
+7. **Hạn chế của thiết kế này** và hướng đi khác có thể cân nhắc. Không giấu điểm yếu.
+8. **Ngoài phạm vi:** những gì chưa làm ở bản này và vì sao để sau.
+9. **Ranh giới cho agent khi làm:** luôn làm (vd chạy test trước khi commit); hỏi người quản lý trước (vd đổi cấu trúc database, thêm thư viện); không bao giờ (vd đưa khoá bí mật vào code, xoá test đang lỗi).
+10. **Kế hoạch test:** mỗi tiêu chí trong yêu cầu ứng với test nào.
+11. **Ước lượng thời gian và cách chia việc cho agent** (mục 6).
 
-Với web đơn giản, gộp các mục cho ngắn; mục không áp dụng ghi một dòng "Không có".
+Mỗi quyết định khó đảo ngược (framework, database, kiểu kiến trúc, đăng nhập, hosting) ghi thêm một ADR ở trạng thái Đề xuất. Xem `references/adr.md`.
+
+Với web đơn giản, gộp các mục cho ngắn; mục không áp dụng ghi một dòng "Không có". Không cần ADR cho trang demo.
 
 Dừng, chờ người quản lý duyệt. Không viết code trước khi duyệt.

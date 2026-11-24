@@ -2,8 +2,8 @@
 
 - Lượt 1: đạt 5/5 với bộ đề ban đầu.
 - Người quản lý góp ý: agent chỉ đề xuất, người quản lý quyết; web đơn giản phải gọn, xong trong vài giờ, chia agent hợp lý; skill đang thiên về chuyện monolith. Sửa skill, thêm tiêu chí vào câu 1, 3, 4, 5.
-- Lượt 2: đạt 4/5. Câu 5 trượt vì agent viện dẫn chuyện monolith ở dự án cũ. Sửa skill: chuyện đó chỉ để hiểu lý do, không nhắc trong bản thiết kế.
-- Lượt 3 (câu 3, 5): đạt. Tổng: 5/5. Bản dưới đây là câu trả lời mới nhất của từng câu.
+- Lượt 2: đạt 4/5. Câu 5 trượt vì agent viện dẫn chuyện monolith ở dự án cũ. Sửa skill; chạy lại câu 3, 5: đạt.
+- Lượt 3, sau khi thêm phần tham khảo (kiểu kiến trúc, bản đồ module, hợp đồng API, ADR): đạt 5/5. Bản dưới đây là lượt 3.
 
 ---
 
@@ -13,186 +13,279 @@
 
 ### Agent trả lời
 
-Tôi đã soạn xong bản thiết kế, đang chờ người quản lý duyệt. Chưa có dòng code nào. Thư mục dự án còn trống, chưa có CLAUDE.md hay tài liệu kiến trúc, nên tôi thiết kế từ đầu.
+Tôi đã soạn xong bản thiết kế, kèm 5 bản ghi quyết định (ADR) đang ở trạng thái **Đề xuất**. Dự án chưa có CLAUDE.md hay tài liệu kiến trúc nào nên tôi thiết kế từ đầu. **Tôi dừng ở đây chờ người quản lý duyệt, chưa viết code.**
 
-Có 3 điểm bản tóm tắt chưa nói rõ: đơn có một hay nhiều sản phẩm, các trạng thái và ai được đổi, và "ngày giao" là ngày nào. Tôi đã viết thiết kế theo phương án đề xuất ở mục 0. Người quản lý cần chốt 3 điểm này, công nghệ ở mục 2 và kiến trúc ở mục 3.
+Có 3 câu cần hỏi khách ở mục 0. Mỗi câu đã kèm phương án đề xuất, và cả bản thiết kế đang làm theo các đề xuất đó. Nếu khách chọn khác thì chỉ phải sửa những chỗ đã ghi.
 
-File đã lưu: `/tmp/claude-0/-home-user/c0233e0d-07fe-5e8c-8ba5-a37b69422b37/scratchpad/tk2/w1/docs/thiet-ke/20261124-quan-ly-don-ca-phe-si.md`
+File đã lưu:
+- `docs/thiet-ke/20261124-quan-ly-don-si-ca-phe.md`
+- `docs/adr/001-java-spring-boot-vue3.md` … `005-docker-compose-mot-vps.md`
 
 ---
 
 # Thiết kế: Quản lý đơn sỉ cà phê hạt
 
-## 0. Ba điểm cần chốt
+Trạng thái: **Đề xuất, chờ người quản lý duyệt**. Ngày: 2026-11-24.
 
-Mỗi câu có sẵn phương án đề xuất. Người quản lý chỉ cần đồng ý hoặc sửa, cần thì mang đi hỏi khách.
+## 0. Cần người quản lý chốt trước khi làm (3 câu, mỗi câu có đề xuất)
 
-1. **Một đơn có một hay nhiều sản phẩm, giá lấy ở đâu?**
-   - Đề xuất: một đơn có nhiều dòng, mỗi dòng gồm sản phẩm, số kg và đơn giá/kg.
-   - Đơn giá tự điền từ bảng giá, sale được sửa theo từng quán.
-   - Tổng tiền = Σ(kg × đơn giá).
-   - Trên danh sách, cột "Sản phẩm" ghi gộp (vd "Robusta 10kg, Arabica 5kg") và cột "Số kg" là tổng kg.
-2. **Có những trạng thái nào, ai được đổi?**
-   - Đề xuất 4 bước: `Mới tạo` (sale) → `Đã đóng gói` (kho) → `Đang giao` (shipper) → `Đã giao, đã thu tiền` (shipper).
-   - Thêm `Đã huỷ`: sale được huỷ khi đơn chưa đóng gói.
-   - Mỗi người có tài khoản riêng và chỉ bấm được bước của vai trò mình. Hệ thống lưu ai đổi và lúc nào.
-   - Giao không thành thì shipper đưa đơn về `Đã đóng gói` và ghi lý do.
-3. **"Ngày giao" là ngày nào, lọc theo ngày nào?**
-   - Đề xuất: ngày giao dự kiến do sale nhập khi tạo đơn, bộ lọc khoảng ngày lọc theo ngày này.
-   - Thời điểm giao thật lưu riêng, xem ở chi tiết đơn.
+1. **Đơn có những trạng thái nào?** Đề xuất 4 trạng thái: `Mới tạo` (sale) → `Đã đóng gói` (kho) → `Đang giao` (shipper nhận hàng đi) → `Đã giao, đã thu tiền` (shipper xác nhận). Giao và thu tiền gộp một bước vì yêu cầu ghi "thu tiền khi giao". Nếu khách cần tách hai việc này (vd quán hẹn trả sau) thì thêm 1 trạng thái.
+2. **Ai được đổi trạng thái nào?** Đề xuất mỗi người một tài khoản, gắn vai:
+   - Sale tạo đơn và được sửa khi đơn còn `Mới tạo`.
+   - Kho chỉ bấm `Đã đóng gói`.
+   - Shipper chỉ bấm `Đang giao` và `Đã giao, đã thu tiền`.
+   - Quản trị làm được mọi bước.
 
-Nếu người quản lý đổi 3 điểm này, chỉ phải sửa mục 5 (dữ liệu) và mục 7 (test).
+   Nếu khách muốn ai cũng bấm được hết thì bỏ phần kiểm vai, nhưng vẫn giữ đăng nhập để biết ai đã bấm.
+3. **Một đơn có mấy sản phẩm?** Đề xuất một sản phẩm mỗi đơn, khớp với cột "sản phẩm, số kg" trên màn danh sách. Nếu quán hay đặt nhiều loại một lần thì đơn có nhiều dòng, cột sản phẩm hiện "Arabica 10kg; Robusta 5kg". Làm thêm khoảng nửa ngày.
 
-## 1. Cấu trúc dự án
+Các giả định khác (không cần hỏi):
+- Lọc khoảng ngày theo **ngày giao**.
+- Đơn giá lấy sẵn từ giá sản phẩm, sale sửa được, và lưu vào đơn. Sau này đổi giá sản phẩm thì đơn cũ vẫn đúng.
+- Tiền tính bằng VND, số kg cho phép 2 chữ số thập phân.
+
+## 1. Cấu trúc dự án tổng quan
 
 **Có backend**, vì:
-- 5 người dùng chung một dữ liệu đơn.
-- Có quy trình trạng thái theo thứ tự và theo vai trò.
-- Có dữ liệu doanh thu, khách hàng cần phân quyền.
+- 5 người dùng chung một bộ đơn, cần lưu database.
+- Có nghiệp vụ thật: quy trình trạng thái, chặn nhảy cóc bước, tính tổng tiền.
+- Có phân quyền theo vai, và dữ liệu doanh thu của khách không được lộ ra ngoài.
 
+**Ai dùng hệ thống:** Sale, Kho, Shipper, Quản trị, dùng trình duyệt trên máy tính hoặc điện thoại. Bản này không nối với hệ thống ngoài nào.
+
+**Các phần chạy riêng:**
 ```
-Trình duyệt (máy tính + điện thoại shipper)
-   │  HTTPS, cookie phiên
-   ▼
-Một ứng dụng Spring Boot: phục vụ giao diện (file tĩnh) + API /api/**
-   │
-   ▼
-PostgreSQL
+Trình duyệt ─HTTPS─> Nginx ─(file tĩnh)─ Web Vue 3 (SPA)
+                       │ /api/*
+                       ▼
+                 API Spring Boot ─JDBC─> PostgreSQL
+                 (tạo file .xlsx khi xuất Excel, trả thẳng về, không lưu lại)
 ```
+Cả ba phần chạy bằng Docker Compose trên một máy chủ.
+
+**Bản đồ module (backend):**
+
+| Module | Lo việc gì | Phụ thuộc |
+|---|---|---|
+| `auth` | Đăng nhập, tài khoản, vai | — |
+| `catalog` | Quán và sản phẩm cà phê, giá | — |
+| `orders` | Đơn, tổng tiền, chuyển trạng thái, lịch sử trạng thái, lọc danh sách | `auth`, `catalog` |
+| `export` | Xuất Excel theo bộ lọc và các cột đang hiện | `orders` |
+
+Phụ thuộc đi một chiều. `export` lấy dữ liệu qua hàm truy vấn công khai của `orders`, không đọc thẳng bảng.
+
+**Cây thư mục chính:**
 ```
-/backend/src/main/java/.../{order, catalog, user, export}
-/backend/src/main/resources/db/migration   # Flyway
-/frontend/src/{pages, components, api, stores}
-/docs  (kien-truc.md, thiet-ke/, api.md)
-docker-compose.yml
+backend/   src/main/java/.../{auth,catalog,orders,export,common}   (mỗi module: web → service → repository)
+           src/main/resources/db/migration/   (Flyway)
+frontend/  src/{pages,components,api,stores}
+docs/      thiet-ke/  adr/  api/openapi.yaml
+docker-compose.yml   CLAUDE.md
 ```
 
-## 2. Công nghệ đề xuất (chờ người quản lý chọn)
+## 2. Công nghệ đề xuất (người quản lý chọn)
 
 | Phần | Đề xuất | Lý do |
 |---|---|---|
-| Backend | Java 21 + Spring Boot 3, JPA, Spring Security | Người quản lý quen dùng. Có sẵn đăng nhập và phân quyền theo vai trò. |
-| DB | PostgreSQL 16 + Flyway | Có transaction và khoá theo `version`, nên 2 người cùng đổi một đơn không ghi đè nhau. |
-| Xuất Excel | Apache POI, xuất ở server | Dùng đúng truy vấn của danh sách, nên file khớp bộ lọc kể cả khi có nhiều trang. Tiền và ngày ghi đúng kiểu số và kiểu ngày. |
-| Frontend | Vue 3 + Vite (SPA) + PrimeVue | **Khác mặc định Nuxt**: app nội bộ có đăng nhập, không cần SEO, nên SSR chỉ làm deploy phức tạp thêm. Bảng của PrimeVue có sẵn chọn cột và hiển thị tốt trên điện thoại. |
-| Đăng nhập | Session cookie | Giao diện và API cùng một địa chỉ nên đây là cách đơn giản nhất. Khoá tài khoản có hiệu lực ngay. |
-| Deploy | Docker Compose trên 1 VPS 2 GB, sao lưu DB hằng ngày | Đủ cho 5 người, khoảng 150–250 nghìn đồng/tháng. |
-| Test | JUnit 5, Mockito, MockMvc, Testcontainers, JaCoCo; Vitest | Đáp ứng yêu cầu độ phủ trên 80%. |
+| Backend | Java 21 + Spring Boot 3 | Người quản lý quen nên tự bảo trì được. Spring Security lo đăng nhập và kiểm vai, Bean Validation kiểm dữ liệu vào, Apache POI xuất .xlsx đúng kiểu số và ngày. |
+| Frontend | Vue 3 + Vite (SPA), **không dùng Nuxt** | Đây là công cụ nội bộ dùng sau đăng nhập, không cần SEO hay render phía máy chủ là điểm mạnh của Nuxt. Dùng SPA thì Nginx phục vụ file tĩnh là đủ, ít phần phải chạy hơn. |
+| Database | PostgreSQL 16 + Flyway | Đơn và tiền cần giao dịch chặt, các truy vấn lọc đơn giản, miễn phí. Flyway quản lý thay đổi cấu trúc bảng. |
+| Đăng nhập | Session cookie (Spring Security) | Chỉ 5 người và một ứng dụng nên không cần JWT. Khoá tài khoản có hiệu lực ngay. |
+| Hosting | Docker Compose trên 1 VPS (2 vCPU, 2–4 GB RAM) | Đủ cho 5 người. Chạy giống nhau trên máy Windows (Docker Desktop) và trên máy chủ. Sao lưu `pg_dump` hằng ngày. |
 
-## 3. Kiến trúc: lợi và hại
+## 3. Kiến trúc: một khối chia module, trong mỗi module phân lớp
 
-Đề xuất: **monolith chia module theo nghiệp vụ**, deploy thành một file jar kèm giao diện. Quy mô ước lượng: khoảng 10 màn, 1–2 người làm, khoảng 10 nghìn đơn mỗi năm.
+Ước lượng cỡ dự án: khoảng 4 module, 6 màn hình, 5 người dùng, 1–2 người phát triển. Sau này có thể thêm công nợ, báo cáo doanh thu, tồn kho.
 
-| | Lợi | Hại |
+| Tiêu chí | Lợi | Hại |
 |---|---|---|
-| Trước mắt | Làm nhanh. Một repo, một lần deploy, không phải lo CORS. Người mới đọc theo module là hiểu. | Sửa một dòng giao diện cũng phải deploy lại cả jar. |
-| Khi lớn lên | Ranh giới module có sẵn, sau này tách ra được. | Nếu module gọi thẳng vào bảng của nhau thì dễ thành "cục to". Phòng bằng cách chỉ gọi qua service và có ArchUnit test kiểm. |
-| Build | Dưới 2 phút. | Tăng dần theo số chức năng. |
-| Deploy, chi phí | Hai container, rẻ. | Chỉ một máy, máy hỏng thì ngừng chạy đến khi dựng lại từ bản sao lưu. |
+| Tốc độ làm | Một repo backend, một lần deploy, làm bản đầu nhanh | Phải giữ ranh giới module ngay từ đầu |
+| Thời gian build | Hiện dưới 1 phút | Thêm công nợ, tồn kho thì build vẫn chung một khối, chậm dần |
+| Dễ hiểu cho người mới | Mở `orders/` là thấy hết phần đơn | Nếu module đọc thẳng bảng của nhau thì dần thành khối rối |
+| Deploy | 3 container, một lệnh `docker compose up` | Sửa nhỏ cũng phải deploy lại cả backend (gián đoạn vài giây) |
+| Chi phí | 1 VPS, khoảng 150–300 nghìn đồng/tháng | — |
 
-**Khi nào nên đổi:**
-- Có app khác dùng chung dữ liệu (app shipper, cổng đặt hàng cho quán): tách frontend riêng, API dùng token.
-- Build quá 5 phút hoặc từ 3 nhóm làm song song: tách module thành dịch vụ riêng.
+Các hướng đã cân nhắc nhưng không chọn:
+- Tách thành nhiều dịch vụ: thừa với 5 người dùng, tốn công vận hành.
+- Chỉ frontend, dữ liệu để trên Google Sheet: không kiểm được quy trình và quyền.
+
+**Khi nào nên đổi:** khi một module cần chạy hoặc mở rộng riêng (vd app cho quán tự đặt hàng) thì tách module đó ra. Ranh giới module hiện tại đã là sẵn đường tách.
 
 ## 4. Tổng quan giao diện
 
-| # | Màn | Ai dùng | Nội dung |
-|---|---|---|---|
-| 1 | Đăng nhập | Tất cả | Tên đăng nhập, mật khẩu. |
-| 2 | **Danh sách đơn** (màn chính) | Tất cả | Xem chi tiết bên dưới bảng. |
-| 3 | Tạo / sửa đơn | Sale | Chọn quán (gõ để tìm, có nút thêm nhanh), ngày giao, các dòng sản phẩm (kg, đơn giá, thành tiền), tổng tự tính, ghi chú. Chỉ sửa được khi đơn còn `Mới tạo`. |
-| 4 | Chi tiết đơn | Tất cả | Thông tin đơn, lịch sử trạng thái (ai, lúc nào, ghi chú), nút bước tiếp, nút "Giao không thành", nút "Huỷ". |
-| 5 | Danh mục quán, sản phẩm | Quản trị (sale được thêm quán) | Thêm, sửa, ngừng dùng. Không xoá cứng để đơn cũ vẫn giữ dữ liệu. |
-| 6 | Tài khoản | Quản trị | Thêm người dùng, gán vai trò, khoá, đặt lại mật khẩu. |
+| Màn hình | Ai dùng | Nội dung |
+|---|---|---|
+| Đăng nhập | Tất cả | Tên đăng nhập, mật khẩu |
+| **Danh sách đơn** (màn chính) | Tất cả | Lọc theo từ ngày – đến ngày (ngày giao) và trạng thái. Bảng có 7 cột: mã đơn, tên quán, sản phẩm, số kg, tổng tiền, trạng thái (nhãn màu), ngày giao. Nút "Chọn cột" để bật tắt cột, máy nào nhớ lựa chọn của máy đó. Nút "Xuất Excel" xuất đúng các cột đang hiện theo bộ lọc đang áp. Mỗi trang 50 dòng. Mỗi dòng có nút bước tiếp theo, chỉ hiện với vai được phép. |
+| Tạo / sửa đơn | Sale, Quản trị | Chọn quán (gõ để tìm), sản phẩm, số kg, đơn giá (điền sẵn), ngày giao, ghi chú. Tổng tiền tự tính. Chỉ sửa được khi đơn còn `Mới tạo`. |
+| Chi tiết đơn | Tất cả | Thông tin đơn, lịch sử trạng thái (ai đổi, lúc nào), nút bước tiếp theo |
+| Danh mục quán và sản phẩm | Sale, Quản trị | Thêm, sửa, ẩn quán và sản phẩm. Cần có để tạo được đơn. |
+| Tài khoản | Quản trị | Thêm tài khoản, khoá, gán vai, đặt lại mật khẩu |
 
-Màn Danh sách đơn gồm:
-- **Thanh lọc:** từ ngày – đến ngày giao (mặc định tuần này), trạng thái, tìm theo mã đơn hoặc tên quán.
-- **Nút "Chọn cột":** bật hoặc tắt từng cột, trình duyệt nhớ lựa chọn.
-- **Nút "Xuất Excel":** xuất đúng các cột đang hiện, theo đúng thứ tự, với toàn bộ đơn khớp bộ lọc.
-- **Nút "Tạo đơn":** chỉ sale thấy.
-- **Bảng 7 cột:** mã đơn, tên quán, sản phẩm, số kg, tổng tiền, trạng thái (nhãn màu), ngày giao. Dòng cuối là tổng kg và tổng tiền của kết quả lọc. Phân trang 50 đơn mỗi trang.
-- **Mỗi dòng:** nút bước tiếp theo, chỉ hiện khi vai trò của người dùng được làm bước đó.
-
-Trên điện thoại, mỗi đơn hiện thành một thẻ gồm tên quán, tổng tiền và nút bước tiếp theo đủ to để bấm bằng một tay.
-
-**Luồng:** Đăng nhập → Danh sách → Tạo đơn hoặc Chi tiết → đổi trạng thái → quay lại Danh sách.
+Luồng đi: Đăng nhập → Danh sách đơn → Tạo đơn, hoặc Chi tiết đơn → đổi trạng thái → quay về danh sách. Kho và shipper hầu như chỉ dùng màn danh sách: lọc theo trạng thái của mình rồi bấm một nút. Trên điện thoại, bảng thu lại thành dạng thẻ cho shipper dễ bấm.
 
 ## 5. Dữ liệu chính
-
 ```
-users(id, username, password_hash, full_name, role[ADMIN|SALE|WAREHOUSE|SHIPPER], active)
-customers(id, name, phone, address, note, active)
-products(id, name, default_price_per_kg, active)
-orders(id, code UNIQUE, customer_id, delivery_date, status, total_amount BIGINT,
-       total_kg NUMERIC(10,2), note, delivered_at, created_by, version, created_at, updated_at)
-order_items(id, order_id, product_id, product_name, quantity_kg NUMERIC(10,2),
-            unit_price BIGINT, line_amount BIGINT)
-order_status_history(id, order_id, from_status, to_status, changed_by, changed_at, note)
+users(id, username UNIQUE, password_hash, full_name, role[ADMIN|SALE|WAREHOUSE|SHIPPER], is_active)
+customers(id, name, phone, address, is_active)
+products(id, name, unit_price_vnd_per_kg BIGINT, is_active)
+orders(id, code UNIQUE, customer_id, product_id, quantity_kg NUMERIC(10,2) > 0,
+       unit_price_vnd BIGINT, total_vnd BIGINT,
+       status[CREATED|PACKED|SHIPPING|DELIVERED_PAID], delivery_date DATE,
+       note, created_by, created_at, updated_at, version)
+order_status_history(id, order_id, from_status, to_status, changed_by, changed_at)
 ```
+- Tổng tiền `total_vnd = round(kg × đơn giá)`, tính ở backend và lưu lại.
+- Mã đơn dạng `DH-YYMMDD-001`.
+- Cột `version` dùng để chặn hai người cùng đổi một đơn: người bấm sau nhận lỗi 409 và thấy trạng thái mới.
+- Chỉ mục `(delivery_date, status)` cho việc lọc.
+- Nếu câu 3 chọn nhiều sản phẩm mỗi đơn thì tách phần sản phẩm, số kg, đơn giá sang bảng `order_items`.
 
-- Mã đơn dạng `DH-YYMMDD-NNN`, do server sinh trong transaction.
-- `total_kg` và `total_amount` tính lại mỗi khi lưu, lưu sẵn để lọc, sắp xếp và xuất nhanh.
-- Bước nào sang bước nào và vai trò nào được làm nằm trong một lớp `OrderWorkflow`. Đây là phần có nhiều unit test nhất.
-- Đổi trạng thái có kiểm `version`. Nếu người khác vừa đổi đơn đó, API trả 409 và giao diện báo "Đơn đã được cập nhật, tải lại".
-- Chỉ mục cho các cột `delivery_date`, `status`, `customer_id`.
+## 6. Hợp đồng API
 
-**API chính:**
-- `GET /api/orders?from&to&status&q&page`
-- `GET /api/orders/export?...&columns=...`
-- `POST` và `PUT /api/orders`
-- `POST /api/orders/{id}/transitions {toStatus, version, note}`
-- CRUD cho customers, products, users
+Viết thành `docs/api/openapi.yaml` trước khi code. Mọi lỗi trả về cùng một dạng: `{ "error": { "code", "message", "details" } }`.
 
-## 6. Hạn chế
+Mã lỗi:
+- 400: dữ liệu sai
+- 401: chưa đăng nhập
+- 403: sai vai
+- 404: không tìm thấy
+- 409: đơn vừa bị người khác đổi
+- 422: sai nghiệp vụ (nhảy cóc bước, sửa đơn đã đóng gói, xuất quá giới hạn)
+- 500: lỗi máy chủ, không lộ chi tiết bên trong
 
-- **Không có công nợ.** Thiết kế giả định quán luôn trả đủ khi nhận hàng. Bán sỉ cho quán thường có nợ gối đầu, nên hỏi khách sớm. Nếu có thì cần thêm phần thu tiền riêng.
-- Không theo dõi tồn kho, không giao đơn cho từng shipper cụ thể.
-- Không có thông báo (Zalo, email) khi đơn đổi trạng thái.
-- Lựa chọn cột chỉ nhớ trên từng trình duyệt, đổi máy phải chọn lại.
-- Chỉ một máy chủ: máy hỏng thì mất tối đa 1 ngày dữ liệu (theo lịch sao lưu).
-- Hướng khác đã cân nhắc: Google Sheets kèm AppSheet rẻ và nhanh hơn, nhưng khó khoá quy trình theo vai trò và dễ sửa nhầm dữ liệu. Không đề xuất.
+| Endpoint | Vào → Ra | Vai |
+|---|---|---|
+| `POST /api/auth/login`, `POST /logout`, `GET /me` | username, password → user | — |
+| `GET/POST/PUT /api/customers` | name, phone, address, isActive | đọc: tất cả; ghi: SALE, ADMIN |
+| `GET/POST/PUT /api/products` | name, unitPriceVndPerKg, isActive | đọc: tất cả; ghi: SALE, ADMIN |
+| `GET /api/orders?deliveryFrom&deliveryTo&status&page&size&sort` | → `{items:[{id, code, customerName, productName, quantityKg, totalVnd, status, deliveryDate, version}], page, size, totalItems}` | tất cả |
+| `GET /api/orders/{id}` | → đơn + statusHistory | tất cả |
+| `POST /api/orders`, `PUT /api/orders/{id}` | customerId, productId, quantityKg, unitPriceVnd, deliveryDate, note (+version khi sửa) | SALE, ADMIN |
+| `POST /api/orders/{id}/transitions` | toStatus, version → đơn | theo vai của bước |
+| `GET /api/orders/export?…&columns=code,customerName,…` | → file .xlsx | tất cả |
+| `GET/POST/PUT /api/users` | username, fullName, role, isActive, password | ADMIN |
 
-## 7. Kế hoạch test
+Cách xuất Excel:
+- Xuất **toàn bộ** đơn khớp bộ lọc, không chỉ trang đang xem, theo đúng thứ tự cột gửi lên.
+- Số kg và tiền là ô số, ngày giao là ô ngày.
+- Tối đa 20.000 dòng mỗi lần; quá thì trả 422.
+- Tên cột lạ trả 400.
+
+## 7. Hạn chế của thiết kế này
+- Chưa có huỷ đơn, giao thiếu, trả hàng, thu tiền một phần. Gặp thật thì quản trị phải sửa tay, nên nhiều khả năng cần thêm sớm.
+- Nếu giữ một sản phẩm mỗi đơn: quán đặt 2 loại thì sale phải tạo 2 đơn.
+- Chưa có thông báo: kho phải tự mở danh sách để thấy đơn mới. Hướng khác: tự tải lại danh sách mỗi 30 giây, hoặc nhắn Zalo khi có đơn mới.
+- Chỉ một máy chủ, không dự phòng. Nếu chỉ sao lưu hằng ngày thì khi hỏng có thể mất tối đa 1 ngày dữ liệu.
+- Xuất Excel tạo file trong bộ nhớ. Vượt 20.000 dòng thì cần đổi sang ghi dạng luồng (SXSSF).
+
+## 8. Ngoài phạm vi
+- Công nợ, báo cáo doanh thu, tồn kho: yêu cầu chưa nhắc tới, kiến trúc đã chừa chỗ thêm.
+- Huỷ đơn, trả hàng: chưa có trong quy trình đã duyệt.
+- App điện thoại, thông báo Zalo, in phiếu giao, nhập đơn hàng loạt từ Excel: chưa được yêu cầu.
+
+## 9. Ranh giới cho agent khi làm
+- **Luôn làm:**
+  - Viết OpenAPI trước rồi code theo đó.
+  - Chạy unit test trước khi commit.
+  - Đổi database qua migration Flyway mới.
+  - Kiểm vai ở backend, không chỉ ẩn nút trên giao diện.
+  - Làm trên nhánh `feat/<tên>` và mở PR.
+- **Hỏi người quản lý trước:**
+  - Đổi bảng đã chạy migration thật.
+  - Thêm thư viện ngoài danh sách ở mục 2.
+  - Đổi hợp đồng API đã thống nhất.
+  - Thêm trạng thái hoặc vai mới.
+- **Không bao giờ:**
+  - Đưa mật khẩu hay khoá bí mật vào code (dùng `.env`, không commit file này).
+  - Xoá hoặc tắt test đang lỗi.
+  - Sửa migration đã chạy.
+  - Push thẳng lên `main`.
+  - Xoá dữ liệu thật.
+
+## 10. Kế hoạch test
 
 | Tiêu chí | Test |
 |---|---|
-| Danh sách đủ 7 cột, đúng dữ liệu | Integration: tạo đơn 2 dòng sản phẩm, gọi API danh sách, kiểm từng cột (sản phẩm gộp, tổng kg, tổng tiền). |
-| Lọc theo khoảng ngày | Unit và integration: đơn rơi đúng ngày biên, đơn ngoài khoảng, chỉ nhập một đầu, "từ" lớn hơn "đến" thì trả 400. |
-| Xuất Excel các cột đang hiện | Unit `ExcelExporter`: chỉ có các cột được truyền vào, đúng thứ tự, tiền kiểu số, ngày kiểu ngày, có dòng tổng. Integration: số dòng khớp bộ lọc khi vượt 50 đơn. Vitest: giao diện gửi đúng danh sách cột đang bật. |
-| Quy trình sale → kho → shipper → thu tiền | Unit `OrderWorkflow` cho mọi cặp (trạng thái, vai trò, bước đích): bước đúng thì qua; nhảy cóc, sai vai trò hoặc huỷ sau khi đóng gói thì bị chặn; giao không thành thì về `Đã đóng gói`. |
-| Mỗi bước được ghi lại | Integration: mỗi lần chuyển có một dòng lịch sử đúng người, đúng lúc. Bước giao xong thì có `delivered_at`. |
-| 5 người dùng chung | Integration: hai lần chuyển cùng `version` thì một lần thành công, lần kia nhận 409. Sai vai trò nhận 403, chưa đăng nhập nhận 401. |
-| Tổng tiền đúng | Unit: kg lẻ (2,5 kg × 185.000 đ), nhiều dòng, làm tròn về đồng. |
+| Danh sách đủ 7 cột | Unit test API danh sách đơn; kiểm tay màn hình |
+| Lọc khoảng ngày | Unit test: lấy cả hai ngày đầu và cuối, từ ngày > đến ngày trả 400, chỉ chọn một đầu vẫn lọc đúng |
+| Xuất Excel các cột đang hiện | Unit test: đúng cột, đúng thứ tự, đúng số dòng, ô số và ô ngày đúng kiểu, cột lạ trả 400, quá giới hạn trả 422. Kiểm tay mở file bằng Excel trên Windows |
+| Quy trình 4 bước | Unit test: mọi bước hợp lệ đi được, nhảy cóc hoặc đi lùi trả 422, mỗi lần đổi ghi một dòng lịch sử |
+| Đúng vai đổi đúng bước | Unit test theo từng vai: được phép thì 200, không được thì 403 |
+| 5 người dùng chung | Unit test hai người đổi cùng một `version`: người sau nhận 409 |
+| Tổng tiền | Unit test với kg lẻ (2,5 kg × 185.000) và cách làm tròn |
+| Chỉ sửa đơn khi `Mới tạo` | Unit test sửa đơn đã đóng gói trả 422 |
 
-Độ phủ trên 80% cho phần `order`, `export` và controller. Kiểm tay trên máy tính và điện thoại chỉ làm sau khi test xanh. Review cuối do một agent độc lập không tham gia làm.
+Độ phủ test trên 80% cho `orders`, `export`, `auth` và các controller. Chỉ kiểm tay sau khi test đã xanh. Review cuối do một agent độc lập, không tham gia code.
 
-## 8. Thời gian và chia việc cho agent
+## 11. Ước lượng thời gian và chia việc cho agent
 
-Tổng khoảng **2,5–3 ngày làm việc**.
-
-| Bước | Agent | Việc | Thời gian |
+| Bước | Agent | Song song | Thời gian |
 |---|---|---|---|
-| 0 | Điều phối | Chốt hợp đồng API và cấu trúc DB, dựng khung repo, viết CLAUDE.md | 0,5 ngày |
-| 1a | Backend | 4 module kèm unit test và integration test | 1–1,5 ngày, **song song với 1b** |
-| 1b | Frontend | 6 màn, chọn cột, gọi API (dùng mock khi backend chưa xong), Vitest | 1–1,5 ngày, **song song với 1a** |
-| 2 | Điều phối | Ghép hai phần, chạy toàn bộ test, kiểm tay | 0,5 ngày |
-| 3 | Review độc lập | Soát code, phân quyền và độ phủ. Lỗi chặn và lỗi nên sửa phải sửa trong chính PR đó | 0,5 ngày |
+| 1. Khung dự án, Docker Compose, CLAUDE.md, migration, `openapi.yaml` | A | Làm trước để khoá hợp đồng API | 2–3 giờ |
+| 2a. Backend `auth`, `catalog`, `orders` + test | B | Song song | 4–6 giờ |
+| 2b. Backend `export` + test | C | Song song | 2 giờ |
+| 2c. Frontend 6 màn theo OpenAPI (dùng dữ liệu giả đến khi backend xong) | D | Song song | 5–7 giờ |
+| 3. Ghép các phần, kiểm tay trên Docker Desktop Windows | A | — | 1–2 giờ |
+| 4. Review độc lập, sửa lỗi chặn ngay trong PR | E review; B, C, D sửa | — | 2–3 giờ |
 
-Backend và frontend chạy song song được vì hợp đồng API đã chốt ở bước 0. Chia nhỏ hơn chỉ tốn thêm công ghép.
+**Tổng: khoảng 1,5–2 ngày làm việc**, chưa tính thời gian duyệt và hỏi khách. Nếu chọn nhiều sản phẩm mỗi đơn thì cộng thêm khoảng nửa ngày.
+
+---
+
+# ADR (đều ở trạng thái Đề xuất, ngày 2026-11-24)
+
+**ADR-001: Java Spring Boot cho backend, Vue 3 SPA cho frontend**
+- **Bối cảnh:** công cụ nội bộ cho 5 người, có phân vai, quy trình trạng thái và xuất Excel. Người quản lý quen Java và Vue, sẽ tự bảo trì.
+- **Quyết định:** Java 21 + Spring Boot 3 (Spring Security, Bean Validation, Apache POI); Vue 3 + Vite dạng SPA.
+- **Đã cân nhắc:**
+  - Nuxt: không cần SEO hay render phía máy chủ, lại thêm một tiến trình Node phải chạy.
+  - NestJS: người quản lý không quen bằng Java.
+- **Hệ quả:** bảo trì dễ, có sẵn thư viện; đổi lại backend tốn RAM hơn (khoảng 300–500 MB). Xem lại nếu đổi người bảo trì.
+
+**ADR-002: PostgreSQL**
+- **Bối cảnh:** đơn và tiền cần giao dịch chặt, nhiều người đổi trạng thái cùng lúc.
+- **Quyết định:** PostgreSQL 16, đổi cấu trúc qua Flyway, sao lưu `pg_dump` hằng ngày.
+- **Đã cân nhắc:**
+  - MySQL: dùng được tương đương, đổi được nếu người quản lý quen hơn.
+  - Google Sheet: không kiểm được quy trình và quyền.
+- **Hệ quả:** miễn phí, ổn định, nhưng phải tự lo sao lưu. Xem lại khi cần nhiều máy chủ.
+
+**ADR-003: Một khối chia module theo nghiệp vụ**
+- **Quyết định:** một ứng dụng chia 4 module, trong mỗi module phân lớp web → service → repository. Module gọi nhau qua service công khai, phụ thuộc đi một chiều.
+- **Đã cân nhắc:**
+  - Phân lớp toàn cục: nhanh lúc đầu, về sau khó tìm code.
+  - Tách dịch vụ: thừa với cỡ này.
+- **Hệ quả:** một lần deploy, dễ hiểu; build chậm dần khi lớn. Xem lại khi một module cần chạy riêng.
+
+**ADR-004: Đăng nhập bằng session cookie**
+- **Quyết định:** Spring Security form login; cookie HttpOnly, Secure, SameSite; chống CSRF; mật khẩu băm bcrypt; chỉ quản trị tạo tài khoản.
+- **Đã cân nhắc:**
+  - JWT: chỉ hợp khi có nhiều ứng dụng hoặc app điện thoại gọi API.
+  - Đăng nhập Google: chưa biết nhân viên có tài khoản Google công ty không.
+- **Hệ quả:** đơn giản, mặc định an toàn. Xem lại khi có app điện thoại.
+
+**ADR-005: Docker Compose trên một VPS**
+- **Quyết định:** 3 container (nginx + web, backend, postgres) trên VPS 2 vCPU, 2–4 GB RAM; sao lưu ra ngoài máy chủ.
+- **Đã cân nhắc:** PaaS như Render, Railway: ít việc vận hành nhưng đắt hơn và phụ thuộc nhà cung cấp.
+- **Hệ quả:** rẻ (khoảng 150–300 nghìn đồng/tháng), nhưng không có máy dự phòng.
+
+---
+
+**Người quản lý cần làm tiếp:**
+1. Mang 3 câu ở mục 0 đi hỏi khách.
+2. Chọn công nghệ ở mục 2 và các ADR, hoặc sửa nếu muốn khác.
+3. Duyệt bản thiết kế.
+
+Có kết quả rồi tôi cập nhật thiết kế (nếu khách chọn khác đề xuất) và chuyển sang bước tiếp theo.
 
 ### Chấm
 
-**Tiêu chí 1: Chọn có backend, lý do gắn với lưu dữ liệu, nhiều người dùng hoặc quy trình.** ĐẠT. Agent chọn có backend với ba lý do khớp tiêu chí: 5 người dùng chung một dữ liệu đơn, quy trình trạng thái đi theo thứ tự và theo vai trò, và dữ liệu doanh thu cần phân quyền.
-
-**Tiêu chí 2: Có đủ cấu trúc dự án, công nghệ có lý do, tổng quan giao diện và hạn chế.** ĐẠT. Mục 1 có sơ đồ và cây thư mục, mục 2 là bảng công nghệ ghi lý do từng dòng, mục 4 mô tả 6 màn kèm thông tin và luồng đi, mục 6 liệt kê hạn chế, trong đó có điểm công nợ rất sát nghiệp vụ.
-
-**Tiêu chí 3: Có bảng lợi và hại của kiến trúc được chọn.** ĐẠT. Mục 3 có bảng lợi và hại cho monolith chia module, xét theo bốn mặt: trước mắt, khi lớn lên, build, deploy và chi phí. Mục này còn nói khi nào nên đổi kiến trúc.
-
-**Tiêu chí 4: Có ước lượng thời gian và cách chia việc cho agent.** ĐẠT. Mục 8 ước lượng tổng 2,5–3 ngày, có bảng chia bước cho từng agent, chỉ rõ backend và frontend chạy song song nhờ hợp đồng API chốt ở bước 0, và có bước review độc lập.
-
-**Tiêu chí 5: Không viết code, trình như đề xuất, dừng chờ người quản lý quyết.** ĐẠT. Bản thiết kế chỉ có sơ đồ, cấu trúc dữ liệu và danh sách API, không có code chạy được. Agent nói rõ "chưa có dòng code nào", đang chờ duyệt, và nêu những gì người quản lý cần chốt: 3 điểm chưa rõ, công nghệ và kiến trúc.
-
-Ghi chú, không làm trượt tiêu chí nào: lý do chọn Java "người quản lý quen dùng" là giả định, bản tóm tắt không nói điều này, nên nên hỏi lại thay vì khẳng định.
+- **Chọn có backend, lý do gắn với lưu dữ liệu / nhiều người dùng / quy trình — ĐẠT:** Mục 1 chọn có backend với đủ ba lý do: 5 người dùng chung một bộ đơn nên cần database, có quy trình trạng thái không cho nhảy cóc bước, và có phân quyền theo vai.
+- **Có đủ cấu trúc dự án, công nghệ có lý do, tổng quan giao diện, hạn chế — ĐẠT:** Bản thiết kế có cấu trúc dự án (sơ đồ các phần, bảng module, cây thư mục), bảng công nghệ kèm lý do từng phần, bảng 6 màn hình ghi rõ ai dùng và hiện gì, và mục 7 nêu hạn chế cụ thể.
+- **Có bảng lợi và hại của kiến trúc được chọn — ĐẠT:** Mục 3 có bảng lợi/hại theo 5 tiêu chí cho kiến trúc một khối chia module, nêu thêm các hướng đã cân nhắc nhưng không chọn và khi nào nên đổi.
+- **Có ước lượng thời gian và cách chia việc cho agent — ĐẠT:** Mục 11 chia việc cho 5 agent (A–E), ghi bước nào chạy song song, giờ cho từng bước và tổng 1,5–2 ngày, kèm phần cộng thêm nếu khách đổi phạm vi.
+- **Không viết code; trình như đề xuất, dừng chờ người quản lý quyết — ĐẠT:** Agent chỉ viết tài liệu thiết kế, ADR và sơ đồ dữ liệu ở mức phác thảo, không có code. Mọi phần đều ghi là "Đề xuất", agent nói rõ dừng chờ duyệt và liệt kê việc người quản lý cần làm tiếp.
 
 KẾT QUẢ: ĐẠT
 
@@ -204,98 +297,137 @@ KẾT QUẢ: ĐẠT
 
 ### Agent trả lời
 
-Đã có bản thiết kế, đang chờ người quản lý duyệt. Tôi chưa viết dòng code nào. File lưu ở `docs/thiet-ke/20261124-trang-gioi-thieu-quan-ca-phe.md`.
+Tôi đã viết xong bản thiết kế, đang ở trạng thái **Đề xuất**. Tôi dừng ở đây chờ anh/chị duyệt và chưa viết code.
+
+File: `docs/thiet-ke/20261124-trang-gioi-thieu-quan-ca-phe.md` và `docs/adr/001-nuxt-static-cloudflare-pages.md`
 
 ---
 
 # Thiết kế: Trang giới thiệu quán cà phê
 
-## 1. Chỉ cần frontend
-Trang không lưu dữ liệu, không có nghiệp vụ, không có dữ liệu riêng tư hay khoá bí mật, và không có dấu hiệu sẽ mở rộng. Đây là trang chỉ để xem nên không cần backend. Bản đồ nhúng Google Maps cũng không cần API key.
+## 1. Cấu trúc dự án: chỉ có frontend
+Trang chỉ để xem. Không lưu dữ liệu, không có xử lý nghiệp vụ, không có dữ liệu riêng tư. Bản đồ nhúng Google Maps không cần khoá API. Không có lý do nào để làm backend.
 
-Trang gồm một trang duy nhất, cuộn dọc qua các mục:
 ```
-quan-ca-phe/
-├─ index.html          # toàn bộ nội dung
-├─ styles.css
-├─ images/             # ảnh quán đã nén (WebP + JPG dự phòng)
-├─ docs/thiet-ke/ , docs/cap-nhat-noi-dung.md
-└─ README.md
+Khách (điện thoại / máy tính) ──HTTPS──► Hosting tĩnh (HTML/ảnh đã build) ──nhúng──► Google Maps
+Chủ quán ──gửi nội dung (Zalo)──► Người quản lý / agent ──sửa quan.json + ảnh──► PR ──merge──► tự build & deploy
 ```
 
-## 2. Công nghệ đề xuất (người quản lý chọn)
+```
+cafe-site/
+├── content/quan.json   # TOÀN BỘ nội dung: tên, menu, giờ, địa chỉ
+├── public/images/      # ảnh đã nén
+├── components/         # Hero, Gallery, Menu, OpeningHours, Location, Footer
+├── utils/content.ts    # kiểm tra nội dung hợp lệ, định dạng giờ và giá
+├── pages/index.vue
+└── tests/
+```
+Điểm chính: **nội dung để riêng, giao diện để riêng**. Khi đổi menu hay giờ mở cửa, chỉ sửa một file JSON, không đụng vào giao diện.
+
+## 2. Công nghệ đề xuất (anh/chị chọn)
 | Phần | Đề xuất | Lý do |
 |---|---|---|
-| Giao diện | HTML + CSS thuần, không framework, không cần build | Trang không có logic nên Vue/Nuxt không giúp được gì. Vài tháng mới sửa một lần, nên không có thư viện phải cập nhật và không có bước build có thể hỏng. Đổi menu chỉ là sửa chữ trong một file. |
-| Bản đồ | Nhúng iframe Google Maps | Miễn phí, không cần key. Khách bấm vào là mở được chỉ đường. |
-| Hosting | Hosting tĩnh miễn phí (Cloudflare Pages, Netlify hoặc GitHub Pages) | Không phải vận hành server, có sẵn HTTPS, merge xong là tự deploy. |
+| Framework | **Nuxt 3, build tĩnh** | Đúng bộ công nghệ Vue/Nuxt anh/chị quen. Trang build sẵn thành HTML nên Google đọc được nội dung và mở nhanh trên điện thoại |
+| Nội dung | 1 file `quan.json` | Vài tháng mới đổi một lần, chưa đáng làm trang quản trị (CMS) |
+| Ảnh | `@nuxt/image` | Ảnh chủ quán gửi thường nặng vài MB, cần tự thu nhỏ |
+| Bản đồ | Google Maps nhúng + nút "Chỉ đường" | Miễn phí, không cần khoá API |
+| Hosting | Cloudflare Pages (hoặc Netlify) | Miễn phí, tự build khi merge, có sẵn HTTPS |
+| Test | Vitest | Dùng chung bộ công cụ với Nuxt |
 
-Bình thường anh/chị hay dùng Java + Vue/Nuxt, nhưng trang này không có backend và giao diện cũng không có trạng thái gì cần quản lý. Nếu muốn đồng bộ với các dự án khác thì dùng `nuxt generate` xuất ra trang tĩnh vẫn được, chỉ là thêm bước build và thêm thư viện phải bảo trì.
-
-## 3. Kiến trúc trang tĩnh: lợi và hại
+## 3. Kiến trúc: một trang tĩnh, lợi và hại
 | | Trước mắt | Khi dự án lớn lên |
 |---|---|---|
-| **Lợi** | Làm khoảng 2–3 giờ. Người mới đọc vài phút là hiểu. Không có build, deploy chỉ là đẩy file. Chi phí 0đ, chỉ tốn tiền tên miền. Tải nhanh trên điện thoại. | Đổi nội dung không ảnh hưởng phần khác. Sau này chuyển sang Nuxt không phải làm lại giao diện. |
-| **Hại** | Chủ quán không tự sửa được. Mỗi lần đổi nội dung cần người kỹ thuật làm khoảng 15–30 phút. | Nếu có nhiều trang thì phần đầu và chân trang bị lặp. Không có chỗ cho đặt bàn hay form. |
+| **Lợi** | Làm khoảng 3 giờ. Build dưới 1 phút. Người mới đọc 1 file JSON và 6 component là hiểu hết. Không có server nên không có gì để sập. Hosting 0 đ | Muốn thêm trang hay thêm tiếng Anh thì chỉ cần thêm trang hoặc thêm trường trong JSON |
+| **Hại** | Có bước build và thư mục `node_modules`. Chủ quán không tự sửa được nội dung | Nếu cần đặt bàn, form hoặc đổi menu hằng ngày thì phải thêm CMS hoặc backend |
 
-**Khi nào nên đổi kiến trúc:**
-- Chủ quán muốn tự sửa, hoặc nội dung đổi hằng tuần: thêm CMS đơn giản (Decap CMS hoặc Google Sheet).
-- Có từ 3 trang trở lên hoặc nhiều chi nhánh: chuyển sang Nuxt xuất tĩnh.
-- Có đặt bàn, form hoặc cần lưu dữ liệu: lúc đó mới cần backend, và phải làm rõ lại yêu cầu từ đầu.
+Trang sẽ không lớn thêm nhiều: 1 trang, 5–6 khối, 1 người làm.
+
+**Khi nào nên đổi:**
+- Chủ quán muốn tự sửa, hoặc đổi nội dung hằng tuần: thêm Decap CMS (vẫn không cần server).
+- Có đặt bàn, form hoặc lưu dữ liệu: cần làm bản thiết kế mới có backend.
 
 ## 4. Giao diện
-Một màn hình, thiết kế cho điện thoại trước. Thanh điều hướng dính ở đầu trang, bấm vào là nhảy tới từng mục.
-
-| Mục | Nội dung |
-|---|---|
-| Đầu trang | Tên hoặc logo quán, câu giới thiệu, ảnh lớn. Hai nút "Xem menu" và "Chỉ đường". |
-| Ảnh quán | Lưới 4–8 ảnh, bấm vào để phóng to. Ảnh chỉ tải khi cuộn tới. |
-| Menu | Chia theo nhóm, mỗi món có tên và giá. Viết bằng chữ chứ không dùng ảnh chụp menu, để đọc rõ trên điện thoại và Google tìm được. |
-| Giờ mở cửa | Bảng theo các ngày trong tuần, kèm ghi chú ngày lễ nếu chủ quán gửi. |
-| Địa chỉ | Địa chỉ viết bằng chữ, bản đồ nhúng, nút "Mở Google Maps", số điện thoại bấm để gọi (nếu chủ quán có gửi). |
-| Chân trang | Tên quán, link mạng xã hội. |
+Một trang cuộn dọc, ưu tiên điện thoại. Thanh menu dính trên cùng, bấm vào là nhảy tới từng khối.
+- **Đầu trang:** ảnh bìa, tên quán, một câu giới thiệu, hai nút "Xem menu" và "Chỉ đường".
+- **Ảnh quán:** lưới 6–9 ảnh, bấm để phóng to.
+- **Menu:** chia theo nhóm (Cà phê, Trà, Bánh…). Mỗi món có tên và giá; mô tả và ảnh thì có cũng được, không có cũng được.
+- **Giờ mở cửa:** bảng theo các thứ trong tuần, tô đậm ngày hôm nay.
+- **Địa chỉ:** địa chỉ bằng chữ, bản đồ nhúng, nút "Chỉ đường", số điện thoại bấm là gọi.
+- **Chân trang:** link Facebook, Instagram, Zalo.
 
 ## 5. Dữ liệu
-Không có database. Nội dung nằm trong `index.html` và thư mục `images/`, gồm: thông tin quán, danh sách món (nhóm, tên, giá), giờ mở cửa và danh sách ảnh (kèm mô tả `alt`).
+Không có database. Toàn bộ nằm trong `quan.json`:
+`Quan { ten, gioiThieu, dienThoai, mangXaHoi[], anhBia, anhQuan[], menu: NhomMon[]{ten, mon[]{ten, gia, moTa?, anh?}}, gioMoCua[]{thu, mo, dong, nghi?}, diaChi{chu, linkGoogleMaps, nhungBanDo} }`
 
-## 6. Hạn chế
-- Chủ quán không tự sửa được nội dung.
-- Bản đồ phụ thuộc vào Google Maps. Địa chỉ viết bằng chữ luôn hiện nên khách không bị mất thông tin.
-- Trang không báo "đang mở/đã đóng" vì yêu cầu không có. Sau này có thể thêm bằng một đoạn JS nhỏ.
-- Trang đẹp hay không phụ thuộc vào ảnh chủ quán gửi.
+## 6. Hợp đồng API
+Không có.
 
-## 7. Kế hoạch test
-Trang không có logic nghiệp vụ hay API nên không có unit test. Thay vào đó, kiểm bằng công cụ trước rồi kiểm tay:
+## 7. Hạn chế
+- Chủ quán không tự sửa được. Chấp nhận được vì vài tháng mới đổi một lần.
+- Nếu chủ quán đổi giá mà quên báo thì trang sẽ ghi sai giá. Đề xuất ghi dòng "Cập nhật: tháng/năm" dưới menu.
+- Nếu Google Maps bị chặn thì vẫn còn địa chỉ bằng chữ và nút "Chỉ đường".
+- Hướng khác là viết HTML thuần: nhẹ hơn, nhưng nội dung trộn lẫn với giao diện, sửa menu dễ làm vỡ bố cục, và không đúng bộ công nghệ anh/chị quen.
 
-| Tiêu chí | Cách kiểm |
+## 8. Ngoài phạm vi
+- Đặt bàn, form, lưu dữ liệu: yêu cầu đã loại.
+- Trang quản trị cho chủ quán: chưa cần.
+- Đa ngôn ngữ, blog: yêu cầu chưa có.
+
+## 9. Ranh giới cho agent
+- **Luôn làm:**
+  - Chạy test và build trước khi commit.
+  - Nén ảnh trước khi đưa vào dự án.
+  - Mọi nội dung lấy từ `quan.json`, không gõ cứng vào component.
+  - Kiểm trên khung màn hình điện thoại.
+- **Hỏi anh/chị trước khi:**
+  - Thêm thư viện ngoài danh sách ở mục 2.
+  - Thêm trường mới vào cấu trúc nội dung.
+  - Đổi hosting hoặc tên miền.
+  - Sửa nội dung thay chủ quán.
+- **Không bao giờ:**
+  - Bịa giá, giờ mở cửa hay địa chỉ. Chủ quán chưa gửi thì để trống và báo thiếu.
+  - Dùng ảnh không phải của quán mà không ghi rõ là ảnh tạm.
+  - Đưa khoá bí mật vào code.
+  - Xoá test đang lỗi.
+
+## 10. Kế hoạch test
+| Tiêu chí | Test |
 |---|---|
-| Ảnh rõ, tải nhanh | Lighthouse ở chế độ điện thoại đạt Performance ≥ 90. Mỗi ảnh ≤ 200 KB và đều có `alt`. |
-| Menu và giờ mở cửa đúng | Đánh dấu đối chiếu từng mục với nội dung chủ quán gửi. |
-| Bản đồ đúng vị trí | Bản đồ hiện đúng điểm. Nút "Mở Google Maps" mở được trên điện thoại thật. |
-| Xem tốt trên điện thoại | Thử trên điện thoại thật và Chrome máy tính: không bị cuộn ngang. Lighthouse Accessibility ≥ 90. |
-| Không có lỗi kỹ thuật | `html-validate` không báo lỗi, không có link hỏng. |
-| Không có form, không lưu dữ liệu | Rà mã: không có `<form>`, cookie hay localStorage. |
+| Nội dung đủ và đúng kiểu (giá là số dương, đủ 7 ngày, có địa chỉ) | Unit test `utils/content.ts` chạy trên file thật và trên các trường hợp thiếu hoặc sai. Nội dung sai thì build dừng |
+| Giờ mở cửa đúng, tô đúng hôm nay | Unit test hàm định dạng giờ, dùng một ngày cố định để kiểm |
+| Menu đủ món, giá hiển thị kiểu VNĐ | Unit test hàm định dạng giá và component Menu |
+| Ảnh quán | Test component Gallery. Kiểm tay mỗi ảnh dưới 300 KB |
+| Bản đồ và chỉ đường | Kiểm tay trên điện thoại thật |
+| Dùng tốt trên điện thoại | Kiểm tay sau khi unit test đã xanh, trên Android và iPhone. Lighthouse mobile từ 90 điểm trở lên |
 
-## 8. Thời gian và chia việc
-- Khoảng **2–3 giờ**, tính từ lúc có đủ nội dung và ảnh.
-- **Agent 1** dựng trang, nén ảnh, viết `docs/cap-nhat-noi-dung.md` và chạy các bước kiểm ở mục 7.
-- **Agent 2** review độc lập: đối chiếu trang với yêu cầu và nội dung gốc. Agent này không tham gia làm trang.
-- Không chạy song song vì việc nhỏ, tách ra chỉ tốn thêm công ghép lại.
+Độ phủ test của `utils/` trên 80%.
+
+## 11. Thời gian và chia việc
+Khoảng **3 giờ**, tính từ lúc đã có đủ nội dung và ảnh.
+- **1 agent làm**, khoảng 2,5 giờ, làm tuần tự. Việc nhỏ, chia ra nhiều agent chỉ tốn thêm công phối hợp.
+- **1 agent review độc lập**, khoảng 20 phút.
+- **Anh/chị:** kiểm tay trên điện thoại, gửi link cho chủ quán xem, rồi bấm deploy production.
+
+## ADR-001 (Đề xuất)
+Chọn Nuxt 3 build tĩnh, nội dung trong 1 file JSON, deploy lên Cloudflare Pages.
+- **Đã loại:**
+  - HTML thuần: nội dung trộn lẫn giao diện.
+  - Thêm CMS: thừa khi vài tháng mới đổi.
+  - Làm backend: không có lý do cần.
+- **Khi nào xem lại:** chủ quán muốn tự sửa, nội dung đổi hằng tuần, hoặc cần đặt bàn hay form.
 
 ---
 
-**Cần anh/chị quyết:**
-1. Dùng **HTML/CSS thuần** (tôi đề xuất) hay Nuxt xuất tĩnh để đồng bộ với các dự án khác?
-2. Hosting: tôi đề xuất Cloudflare Pages. Tên miền chủ quán đã có chưa, hay cần mua?
-3. Chủ quán đã gửi đủ nội dung chưa (menu kèm giá, giờ mở cửa, địa chỉ, 4–8 ảnh, số điện thoại nếu muốn hiện)?
+## Cần anh/chị chốt
+1. **Tên miền:** đề xuất mua tên miền riêng (khoảng 300–500 nghìn/năm, chủ quán trả). Nếu chưa muốn thì tạm dùng tên miền miễn phí của hosting.
+2. **Ai cập nhật nội dung:** đề xuất chủ quán gửi qua Zalo, anh/chị giao agent sửa và tạo PR, mỗi lần khoảng 15 phút.
+3. **Ảnh:** đề xuất chủ quán gửi ảnh gốc, ít nhất 6 ảnh quán và 1 ảnh bìa. Nếu chưa có thì dùng ảnh tạm, ghi rõ là ảnh tạm, và thay trước khi phát hành.
 
 ### Chấm
 
-**Chấm câu trả lời: thiết kế trang giới thiệu quán cà phê**
-
-- **Tiêu chí 1: Chọn chỉ frontend, có lý do. ĐẠT.** Mục 1 chọn "Chỉ cần frontend" và nêu đủ ba lý do: trang không lưu dữ liệu, không có nghiệp vụ, và chỉ để xem. Mục 2 nói thêm rằng trang không có logic.
-- **Tiêu chí 2: Không coi backend, database hay trang quản trị là bắt buộc. ĐẠT.** Mục 5 ghi rõ "Không có database". Backend và CMS chỉ xuất hiện ở phần "Khi nào nên đổi kiến trúc", gắn với điều kiện cụ thể như có đặt bàn hoặc chủ quán muốn tự sửa.
-- **Tiêu chí 3: Có tổng quan giao diện và hạn chế. ĐẠT.** Mục 4 mô tả từng phần của trang: đầu trang, ảnh, menu, giờ mở cửa, địa chỉ kèm bản đồ, chân trang. Mục 6 liệt kê hạn chế, ví dụ chủ quán không tự sửa được và bản đồ phụ thuộc Google Maps.
+- **Tiêu chí 1: ĐẠT.** Mục 1 chọn chỉ làm frontend và nêu đủ ba lý do: trang chỉ để xem, không lưu dữ liệu, không có xử lý nghiệp vụ. Mục 2 nói thêm nội dung vài tháng mới đổi một lần, tức là nội dung tĩnh.
+- **Tiêu chí 2: ĐẠT.** Backend, database và trang quản trị/CMS không bị coi là bắt buộc. Câu trả lời ghi rõ "Không có database", "Hợp đồng API: Không có", ADR đã loại backend. CMS và backend chỉ được nhắc ở phần "Khi nào nên đổi", "Ngoài phạm vi" và hướng mở rộng.
+- **Tiêu chí 3: ĐẠT.** Mục 4 mô tả giao diện theo từng khối: đầu trang, ảnh quán, menu, giờ mở cửa, địa chỉ kèm bản đồ, chân trang. Mục 7 có phần hạn chế riêng, nêu cụ thể: chủ quán không tự sửa được, giá có thể sai nếu chủ quán quên báo, Google Maps có thể bị chặn, và so sánh với cách viết HTML thuần.
 
 KẾT QUẢ: ĐẠT
 
@@ -307,202 +439,233 @@ KẾT QUẢ: ĐẠT
 
 ### Agent trả lời
 
-Em chưa ghi được vào file: quyền sửa `docs/thiet-ke/20261124-theo-doi-tieu-dung-khach.md` chưa được cấp, nên file trên máy vẫn là bản nháp đã có sẵn trong thư mục. Bên dưới là bản thiết kế đầy đủ. So với bản nháp đó, em sửa 3 chỗ:
-- Gộp câu hỏi về phần mềm bán hàng (POS) vào câu 2, để chỉ còn đúng 3 câu hỏi.
-- Thêm cột chống ghi trùng `request_id` vào bảng giao dịch. Bản nháp có test cho việc này nhưng bảng dữ liệu lại thiếu cột.
-- Chuyển câu hỏi về việc khách đồng ý cho lưu dữ liệu sang vòng sau.
+Em đã thiết kế xong và đang **dừng để chờ chị duyệt**. Em chưa viết code.
 
-Nếu chị cấp quyền sửa file, em sẽ ghi bản này vào file đó.
+Em đã lưu 1 bản thiết kế và 5 bản ghi quyết định (ADR) trong thư mục `docs/`:
+- `docs/thiet-ke/20261124-theo-doi-tieu-dung.md`
+- `docs/adr/001` đến `005`, đều ở trạng thái Đề xuất
+
+Dưới đây là toàn bộ nội dung.
 
 ---
 
-# Thiết kế: Web theo dõi tiêu dùng khách hàng cho chuỗi cửa hàng
+# Thiết kế: Web theo dõi tiêu dùng khách hàng cho chuỗi cửa hàng (bản 1)
 
-Trạng thái: **ĐỀ XUẤT, chờ người quản lý duyệt.** Chưa viết code.
+## 0. Giả định cần xác nhận
+Bản tóm tắt chưa nói rõ 3 điều dưới đây. Em đề xuất sẵn từng điều để chị chỉ cần gật hoặc sửa. Nếu giả định nào sai thì chỉ phải sửa phần dữ liệu và màn hình liên quan, kiến trúc giữ nguyên.
+1. **Nhận diện khách bằng số điện thoại**, mỗi số là một khách trong toàn chuỗi. Tên khách không bắt buộc.
+2. **Giao dịch chỉ ghi tổng tiền**, ngày giờ, cửa hàng và ghi chú, không ghi từng món. Ghi từng món thì phải làm thêm danh mục sản phẩm, đó là việc lớn hơn nhiều.
+3. **Có 2 vai trò:** nhân viên (STAFF) gắn với một cửa hàng và tự nhập giao dịch; quản lý chuỗi (ADMIN) xem được tất cả. Bản 1 không nối với máy bán hàng (POS).
 
-Đầu vào: bản tóm tắt yêu cầu đã duyệt.
-- Bản đầu: ghi nhận giao dịch, xem lịch sử tiêu dùng từng khách.
-- Sẽ thêm dần: tích điểm, khuyến mãi, báo cáo theo cửa hàng. Có thể thuê thêm lập trình viên.
+## 1. Cấu trúc dự án
+**Có backend**, vì đủ cả 4 điều kiện:
+- Phải lưu dữ liệu, nhiều cửa hàng dùng chung một danh sách khách.
+- Có nghiệp vụ thật: giao dịch, sau này thêm tích điểm và khuyến mãi.
+- Dữ liệu riêng tư (số điện thoại, chi tiêu) và phải phân quyền theo cửa hàng.
+- Khách đã báo sẽ mở rộng và thuê thêm lập trình viên.
 
-### Giả định cần người quản lý xác nhận (3 câu)
-Bản tóm tắt chưa nói rõ 3 điểm dưới đây. Thiết kế đang theo phương án đề xuất. Chị đồng ý thì giữ nguyên, hoặc mang đi hỏi khách. Nếu khách trả lời khác thì phải sửa phần dữ liệu.
+**Ngữ cảnh:** nhân viên cửa hàng và quản lý chuỗi cùng dùng web. Bản 1 không nối hệ thống ngoài nào.
 
-1. **Nhận diện khách bằng gì?** Đề xuất: **số điện thoại**. Mỗi số chỉ thuộc một khách trong toàn chuỗi và dùng chung ở mọi cửa hàng.
-2. **Giao dịch vào hệ thống bằng cách nào, ghi tổng tiền hay từng mặt hàng?**
-   - Đề xuất: bản đầu nhân viên **nhập tay tổng tiền và ghi chú** trên web, chưa nối máy bán hàng (POS).
-   - Hỏi kèm: chuỗi đang dùng phần mềm bán hàng nào? Nếu phần mềm đó đã có quản lý khách và tích điểm, nên cân nhắc nối vào thay vì tự xây.
-   - Nếu khách cần báo cáo theo mặt hàng thì phải thêm bảng dòng hàng ngay từ đầu.
-3. **Ai dùng, sửa giao dịch sai thế nào?** Đề xuất 3 vai:
-   - *Nhân viên*: ghi giao dịch, xem khách.
-   - *Quản lý cửa hàng*: thêm quyền huỷ giao dịch của cửa hàng mình.
-   - *Quản trị chuỗi*: xem tất cả, quản lý cửa hàng và tài khoản.
+**Container:** Trình duyệt → Vue 3 SPA (file tĩnh) → gọi qua HTTPS, dữ liệu JSON, cookie phiên → API Spring Boot (một tiến trình, chia module) → PostgreSQL.
 
-   Giao dịch **không sửa, không xoá**. Muốn sửa thì tạo bút toán huỷ, có ghi lý do.
+**Bản đồ module**
 
-## 1. Cấu trúc dự án tổng quan
+| Module | Lo việc gì | Phụ thuộc | Bản 1 |
+|---|---|---|---|
+| identity | Đăng nhập, tài khoản nhân viên, vai trò | stores | Có |
+| stores | Danh sách cửa hàng | — | Có |
+| customers | Thông tin khách, tra theo số điện thoại | — | Có |
+| transactions | Ghi giao dịch, huỷ giao dịch, lịch sử | customers, stores | Có |
+| loyalty | Tích điểm | transactions (nghe sự kiện), customers | Sau |
+| promotions | Khuyến mãi | customers, stores | Sau |
+| reports | Báo cáo theo cửa hàng | transactions, stores (chỉ đọc) | Sau |
 
-**Có backend**, vì:
-- Phải lưu dữ liệu vào database, nhiều cửa hàng và nhân viên dùng chung.
-- Có nghiệp vụ thật: tính tổng chi tiêu, huỷ giao dịch. Sau này còn tích điểm, khuyến mãi, báo cáo.
-- Cần bảo mật: số điện thoại và lịch sử mua là dữ liệu cá nhân, phải phân quyền theo cửa hàng.
-- Khách đã nói sẽ mở rộng và có thể thuê thêm người làm.
+- Phụ thuộc chỉ đi một chiều. Module gọi nhau qua interface công khai, không đọc thẳng bảng của nhau.
+- Module `transactions` phát 2 sự kiện `TransactionRecorded` và `TransactionVoided`. Khi làm tích điểm, module tích điểm chỉ cần nghe 2 sự kiện này, **không phải sửa module giao dịch**.
+- Ranh giới module được kiểm tự động bằng test (`ApplicationModules.verify()` của Spring Modulith).
 
-```
-[Trình duyệt: Nuxt SPA]  --REST/JSON + JWT-->  [Backend Spring Boot]  -->  [PostgreSQL]
-   máy tính, tablet tại quầy                    chia module theo nghiệp vụ
-```
+**Cây thư mục:**
+- `backend/` gồm các module `identity/`, `stores/`, `customers/`, `transactions/` (mỗi module có `api/`, `internal/`, `web/`) và `shared/`; file đổi cấu trúc database ở `db/migration` (Flyway).
+- `frontend/` gồm `pages/`, `components/`, `api/`, `stores/`.
+- `docs/` gồm `thiet-ke/`, `adr/`, `api/openapi.yaml`.
 
-Cây thư mục chính (một repo, hai thư mục):
-```
-/
-├─ backend/                         Spring Boot
-│  └─ src/main/java/.../
-│     ├─ shared/                    lỗi chung, kiểu tiền, sự kiện nội bộ
-│     ├─ auth/                      đăng nhập, tài khoản, vai trò
-│     ├─ store/                     cửa hàng
-│     ├─ customer/                  khách hàng
-│     ├─ transaction/               giao dịch, huỷ giao dịch
-│     └─ (sau này) loyalty/ promotion/ reporting/
-│  └─ src/main/resources/db/migration/   Flyway
-├─ frontend/                        Nuxt: pages/ components/ composables/api/
-├─ docs/                            kien-truc.md, thiet-ke/, api/openapi.yaml
-└─ docker-compose.yml               PostgreSQL chạy cục bộ
-```
+## 2. Công nghệ đề xuất (chờ chị chọn)
 
-Ba quyết định giúp gắn tính năng sau vào dễ:
-- **Giao dịch chỉ thêm, không sửa.** Huỷ thì tạo dòng `VOID` trỏ về giao dịch gốc. Nhờ vậy điểm tích luỹ sau này tính đúng và truy lại được.
-- **Phát sự kiện nội bộ `TransactionRecorded` / `TransactionVoided`.** Module tích điểm và khuyến mãi chỉ cần nghe sự kiện, không phải sửa module giao dịch.
-- **Module không đọc bảng của nhau**, chỉ gọi service công khai của module kia. Có test kiến trúc để chặn vi phạm.
-
-## 2. Công nghệ đề xuất (chờ người quản lý chọn)
-
-| Phần | Đề xuất | Lý do gắn với yêu cầu |
+| Phần | Đề xuất | Lý do |
 |---|---|---|
-| Backend | Java 21 + Spring Boot 3 | Mặc định của người quản lý. Nghiệp vụ tiền và điểm cần kiểu dữ liệu chặt và transaction tốt. Khi khách thuê thêm người, lập trình viên Java dễ tuyển. |
-| Chia module | Spring Modulith | Ranh giới module được kiểm bằng test. Có sẵn cơ chế sự kiện nội bộ cho tích điểm và khuyến mãi. |
-| Database | PostgreSQL | Dữ liệu tiền cần ràng buộc và transaction. Báo cáo theo cửa hàng là phép cộng gộp, SQL làm tốt. |
-| Migration | Flyway | Lịch sử thay đổi bảng nằm trong repo, người mới chạy lại được. |
-| Frontend | Nuxt 3 (SPA) + Vue 3 + TypeScript | Mặc định của người quản lý. App nội bộ có đăng nhập nên không cần SEO. TypeScript giúp người mới ít sai khi gọi API. |
-| Bộ giao diện | PrimeVue hoặc Vuetify (skill giao diện chọn) | Có sẵn bảng, form, phân trang. |
-| Xác thực | Spring Security + JWT, mật khẩu băm bcrypt | Phân quyền theo vai và theo cửa hàng. |
-| Hợp đồng API | OpenAPI (springdoc), sinh client TypeScript | Frontend và backend làm song song theo cùng một hợp đồng. |
-| Test | JUnit 5, Testcontainers (PostgreSQL thật), Vitest, Playwright | Test trên database thật, tránh lỗi chỉ lộ ra khi deploy. |
+| Backend | Java 21 + Spring Boot 3 + Spring Modulith | Đúng công nghệ chị hay dùng. Modulith giữ ranh giới module bằng test, hợp với việc thêm dần chức năng và thêm người. |
+| Database | PostgreSQL + Flyway | Dữ liệu tiền cần toàn vẹn. Báo cáo theo cửa hàng sau này là truy vấn gộp, Postgres làm tốt. Flyway lưu mỗi lần đổi bảng thành một file có số thứ tự, người mới đọc là biết lịch sử. |
+| Frontend | Vue 3 + Vite + Pinia + PrimeVue | **Khác mặc định Nuxt:** đây là web nội bộ, mọi màn đều sau đăng nhập, không cần SEO. SPA build nhanh và deploy chỉ là file tĩnh. Nếu chị muốn giống các dự án khác thì dùng Nuxt `ssr:false`, gần như không tốn thêm công. |
+| Đăng nhập | Spring Security, phiên lưu ở máy chủ, cookie HttpOnly | Khoá được ngay tài khoản của nhân viên nghỉ việc. Chỉ có một frontend nên chưa cần JWT. |
+| API và test | OpenAPI (springdoc); JUnit 5 + Testcontainers; Vitest; JaCoCo | Frontend và backend làm song song theo cùng hợp đồng API. Test chạy trên Postgres thật. |
 
-Tiền lưu bằng số nguyên VND (`BIGINT`), không dùng số thực.
+## 3. Kiến trúc: modular monolith, trong mỗi module dùng phân lớp
+Ước lượng cỡ dự án: bản 1 có khoảng 4 module, 15 endpoint, 5 màn hình. Khi đủ tích điểm, khuyến mãi, báo cáo thì khoảng 7 module, 40–60 endpoint, 2–4 người làm.
 
-## 3. Kiến trúc: monolith chia module, lợi và hại
-
-**Ước lượng quy mô:**
-- Khoảng 5–7 nhóm chức năng: khách, giao dịch, cửa hàng, tài khoản, tích điểm, khuyến mãi, báo cáo.
-- 1–4 lập trình viên, vài đến vài chục cửa hàng.
-
-Với quy mô này, tách thành nhiều dịch vụ riêng là quá nặng. Còn monolith không chia module thì càng thêm chức năng càng khó hiểu.
-
-**Đề xuất:** một backend deploy duy nhất, bên trong chia module theo nghiệp vụ, có test chặn phụ thuộc sai. Frontend tách riêng.
-
-| Tiêu chí | Lợi | Hại |
+| Phương diện | Trước mắt | Khi lớn lên |
 |---|---|---|
-| Tốc độ làm bản đầu | Một dự án, một database, deploy một lần. Nhanh gần bằng monolith thường. | Mất thêm khoảng nửa ngày dựng ranh giới module và test kiến trúc. |
-| Thời gian build | Ít module, build dưới 1–2 phút. | Khi lớn hẳn, mọi module vẫn build chung. Có thể giảm bằng cách tách module Gradle. |
-| Người mới hiểu code | Mỗi nghiệp vụ một thư mục. Người làm tích điểm chỉ cần đọc `loyalty/` và sự kiện giao dịch. | Phải học quy tắc "không đọc bảng module khác". Mới đầu thấy gò bó. |
-| Deploy | Một file jar, một database. Rẻ, ít thứ phải theo dõi. | Lỗi nặng ở một module có thể làm sập cả ứng dụng. Không tăng sức chạy riêng từng phần được. |
-| Chi phí | Một máy chủ nhỏ và một database là đủ. | Không đáng kể. |
-| Báo cáo về sau | Lúc đầu truy vấn thẳng database chính. | Dữ liệu lớn thì báo cáo nặng có thể làm chậm việc ghi giao dịch. |
+| Tốc độ làm | Nhanh: 1 repo, chạy 1 lệnh | Mỗi người làm 1 module, ít đụng code nhau |
+| Thời gian build | Vài chục giây | Tăng theo cả khối; giảm được bằng chạy test theo module. Nếu quá 5 phút thì xem lại kiến trúc |
+| Người mới | Mất khoảng nửa ngày để hiểu cách chia module và sự kiện | Chỉ cần đọc 1 module và interface của module nó gọi |
+| Deploy | 1 file jar + file tĩnh + 1 database | Vẫn deploy 1 lần. **Hại:** lỗi một module có thể làm sập cả web, không deploy riêng từng phần được |
+| Chi phí | 1 máy chủ nhỏ | Vẫn rẻ, không tốn chi phí vận hành nhiều dịch vụ |
+| Kỷ luật | Phải đặt code đúng module | Nếu bỏ test ranh giới thì dễ thành một khối rối, nên CI bắt buộc chạy test này |
 
-**Khi nào đổi kiến trúc:**
-- Báo cáo làm chậm việc ghi giao dịch: thêm bảng tổng hợp, hoặc dùng bản sao database chỉ để đọc.
-- Có ứng dụng khác dùng chung dữ liệu (app cho khách xem điểm, nối POS): mở API công khai riêng.
-- Từ 2 nhóm trở lên cùng sửa một repo và hay đụng nhau: tách module Gradle hoặc tách dịch vụ.
+**Khi nào đổi kiến trúc:** khi có đội cần deploy riêng, hoặc báo cáo làm chậm việc nhập giao dịch. Lúc đó tách `reports` thành dịch vụ riêng trước, đọc từ bản sao database. Vì các module chỉ nói chuyện qua interface và sự kiện nên tách ra không phải viết lại.
 
 ## 4. Tổng quan giao diện
 
-Ưu tiên dùng tốt trên tablet ở quầy, vì việc chính là ghi giao dịch nhanh.
+| Màn | Ai dùng | Nội dung chính |
+|---|---|---|
+| Đăng nhập | Mọi người | Tài khoản, mật khẩu |
+| **Ghi giao dịch** (màn mặc định của nhân viên) | STAFF, ADMIN | Ô số điện thoại to ở trên cùng. Gõ xong hiện tên khách, tổng chi tiêu, lần mua gần nhất. Khách mới thì tạo ngay tại chỗ. Bên dưới: số tiền, ngày giờ (mặc định là bây giờ), ghi chú, nút Lưu. Lưu xong form tự xoá để nhập khách tiếp. |
+| Danh sách khách | STAFF, ADMIN | Tìm theo số điện thoại hoặc tên. Bảng: tên, số điện thoại, tổng chi tiêu, số lần mua, lần mua gần nhất. Có phân trang. |
+| **Lịch sử tiêu dùng của khách** | STAFF, ADMIN | Đầu trang: tổng chi tiêu, số lần mua, ngày mua đầu và cuối. Lọc theo khoảng ngày, cửa hàng. Bảng giao dịch; giao dịch đã huỷ bị gạch ngang. Nút Huỷ có hỏi lý do. |
+| Quản lý cửa hàng và nhân viên | ADMIN | Tab cửa hàng và tab nhân viên (gán cửa hàng, vai trò, khoá hoặc mở tài khoản) |
 
-| # | Màn | Ai dùng | Bố cục và thông tin |
-|---|---|---|---|
-| 1 | Đăng nhập | Tất cả | Tên đăng nhập, mật khẩu. Nhân viên đăng nhập là vào thẳng cửa hàng của mình. |
-| 2 | **Ghi giao dịch** (trang chính) | Nhân viên | Nhập SĐT, hiện tên khách, tổng chi, lần mua gần nhất. Khách mới thì hiện form tạo nhanh (tên, SĐT). Nhập số tiền và ghi chú, bấm **Lưu**. Lưu xong báo thành công và xoá form. |
-| 3 | Danh sách khách | Tất cả | Tìm theo SĐT hoặc tên. Bảng gồm tên, SĐT, tổng chi, số lần mua, lần mua cuối. Có phân trang. |
-| 4 | **Chi tiết khách** | Tất cả | Đầu trang: tổng chi, số lần mua, chi trung bình mỗi lần. Thân trang: lịch sử giao dịch (ngày, cửa hàng, số tiền, nhân viên, đã huỷ hay chưa), lọc theo ngày và cửa hàng. Có nút sửa thông tin khách. |
-| 5 | Giao dịch của cửa hàng | Quản lý cửa hàng, quản trị | Lọc theo ngày, có tổng tiền trong ngày. Nút **Huỷ**, bắt buộc nhập lý do. |
-| 6 | Quản trị cửa hàng, tài khoản | Quản trị chuỗi | Danh sách cửa hàng và tài khoản. Thêm hoặc khoá tài khoản. |
-
-Luồng đi giữa các màn:
-- Nhân viên: đăng nhập, vào màn 2. Từ màn 2 sang lại màn 3 được. Từ màn 3, hoặc bấm tên khách ở màn 2, để sang màn 4.
-- Quản lý cửa hàng và quản trị chuỗi có thêm menu sang màn 5 và màn 6.
+Luồng đi: Đăng nhập → Ghi giao dịch ⇄ Danh sách khách → Lịch sử khách. Màn Ghi giao dịch phải dùng tốt trên máy tính bảng ở quầy, ít thao tác nhất có thể.
 
 ## 5. Dữ liệu chính
-
 ```
-store    (id, code, name, address, active)
-app_user (id, username, password_hash, full_name, role[STAFF|STORE_MANAGER|ADMIN], store_id → store, active)
-customer (id, phone UNIQUE, full_name, note, created_at, created_store_id → store, updated_at, updated_by)
-txn      (id, customer_id → customer, store_id → store, user_id → app_user,
-          type[SALE|VOID], amount BIGINT, occurred_at, note,
-          voided_txn_id → txn UNIQUE (chỉ có khi type=VOID), void_reason,
-          request_id UNIQUE (chống ghi trùng khi bấm 2 lần), created_at)
+stores(id, name, address, is_active, created_at)
+staff_accounts(id, username, password_hash, role[ADMIN|STAFF], store_id, is_active)
+customers(id, phone UNIQUE, name NULL, created_at, created_by)
+transactions(id, customer_id, store_id, amount BIGINT VND >0, occurred_at, note,
+             status[RECORDED|VOIDED], void_reason, voided_by, voided_at, created_by, created_at)
+  index (customer_id, occurred_at DESC), (store_id, occurred_at)
 ```
+- **Giao dịch không sửa, không xoá.** Nhập sai thì huỷ rồi ghi lại (ADR-005).
+- Tiền lưu bằng số nguyên VND, không dùng số thực.
+- Mỗi giao dịch có `store_id` ngay từ bản 1, nên khi làm báo cáo theo cửa hàng sẽ có dữ liệu đúng từ ngày đầu.
+- Tổng chi tiêu tính trực tiếp bằng truy vấn. Khi dữ liệu lớn và truy vấn chậm thì thêm bảng tổng hợp.
 
-- Bảng giao dịch tên `txn` để tránh trùng từ khoá SQL `transaction`.
-- Huỷ giao dịch là ghi thêm một dòng `VOID` mang số tiền âm. Tổng chi tiêu = `SUM(amount)`. Mỗi giao dịch chỉ huỷ được một lần.
-- Index `(customer_id, occurred_at)` cho lịch sử khách, `(store_id, occurred_at)` cho báo cáo theo cửa hàng.
-- Giai đoạn sau, chưa làm: `loyalty_account`, `point_entry`, `promotion`, `txn_promotion`. Thêm `txn_item` nếu khách cần ghi từng mặt hàng (câu hỏi 2).
+## 6. Hợp đồng API
+- Mọi lỗi trả cùng một dạng `{ "error": { "code", "message", "details" } }`.
+- Mọi danh sách đều phân trang `?page=&size=`.
 
-## 6. Hạn chế của thiết kế này
-
-- **Cần có mạng.** Mất internet thì không ghi được giao dịch. Làm chế độ offline khá tốn công.
-- **Nhập tay hai lần.** Nhân viên bấm máy bán hàng rồi nhập lại trên web, dễ quên hoặc nhập sai. Chỉ hết lỗi này khi nối POS.
-- **Báo cáo chạy chung database với ghi giao dịch.** Ổn với vài trăm nghìn giao dịch, lớn hơn thì cần bảng tổng hợp.
-- **Một SĐT là một khách.** Khách đổi số hoặc nhiều người dùng chung một số thì bị gộp sai. Bản đầu xử lý bằng cách sửa tay thông tin khách.
-- **Dữ liệu cá nhân:** khách hàng của chuỗi cần đồng ý cho lưu thông tin, theo quy định bảo vệ dữ liệu cá nhân. Bản đầu chưa có màn ghi nhận đồng ý. Để hỏi ở vòng sau, khi đó chỉ cần thêm một cột và một ô đánh dấu, không ảnh hưởng kiến trúc.
-- **Hướng khác:** nếu phần mềm bán hàng của chuỗi đã có quản lý khách và tích điểm, nối vào có thể rẻ hơn tự xây (câu hỏi 2).
-
-## 7. Kế hoạch test
-
-| Tiêu chí | Unit test (backend, phủ trên 80% logic và controller) | Test luồng |
+| Endpoint | Vào → Ra | Lỗi riêng |
 |---|---|---|
-| Ghi giao dịch | Giao dịch hợp lệ được tạo. Số tiền ≤ 0 hoặc thiếu khách thì bị từ chối. Nhân viên chỉ ghi được cho cửa hàng của mình. Cùng `request_id` không tạo 2 giao dịch. | Playwright: nhập SĐT, tạo khách mới, lưu, thấy giao dịch trong lịch sử. |
-| Huỷ giao dịch | Tạo dòng VOID số tiền âm. Không huỷ được 2 lần. Nhân viên không có quyền huỷ. Quản lý không huỷ được giao dịch cửa hàng khác. Bắt buộc có lý do. | Huỷ ở màn 5, tổng chi của khách giảm đúng. |
-| Lịch sử tiêu dùng | Tổng chi, số lần mua, trung bình đều trừ giao dịch huỷ. Lọc và phân trang đúng. | Mở chi tiết khách, số liệu khớp dữ liệu mẫu. |
-| Khách hàng | SĐT trùng bị từ chối. Chuẩn hoá SĐT (`+84`/`0`, khoảng trắng). Tìm được theo SĐT và tên. | Tìm khách ở màn 3. |
-| Bảo mật | Chưa đăng nhập nhận 401, sai vai trò nhận 403. Mật khẩu được băm. Tài khoản bị khoá không đăng nhập được. | Đăng nhập bằng 3 vai, kiểm menu và quyền. |
-| Kiến trúc | Spring Modulith: không module nào gọi phần nội bộ của module khác. Sự kiện được phát ra. | Không có. |
+| POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me | Đăng nhập, đăng xuất, thông tin người đang đăng nhập | 401 |
+| GET /api/customers?q= | Danh sách khách kèm totalSpent, purchaseCount, lastPurchaseAt | — |
+| GET /api/customers/by-phone/{phone} | Khách kèm tóm tắt chi tiêu | 404 |
+| POST /api/customers · PATCH /api/customers/{id} | phone, name? → khách | 400 số điện thoại sai dạng, 409 số điện thoại đã có |
+| GET /api/customers/{id}/transactions | from?, to?, storeId? → danh sách giao dịch | 404 |
+| POST /api/transactions | customerId, amount, occurredAt?, note?, storeId (chỉ ADMIN) | 403 ghi cho cửa hàng khác, 422 số tiền ≤ 0 hoặc thời điểm ở tương lai |
+| POST /api/transactions/{id}/void | reason | 403, 404, 409 đã huỷ rồi |
+| /api/stores, /api/staff-accounts | Chỉ ADMIN được dùng | 403, 409 trùng tên đăng nhập |
 
-Kiểm tay trên tablet chỉ làm sau khi unit test xanh.
+- Nhân viên xem được mọi khách nhưng chỉ ghi và huỷ giao dịch của cửa hàng mình.
+- Số điện thoại được chuẩn hoá ngay khi nhận (bỏ khoảng trắng, đổi +84 thành 0) trước khi lưu và tra.
 
-## 8. Ước lượng thời gian và cách chia việc cho agent
+## 7. Hạn chế của thiết kế
+- Không ghi từng món nên không biết khách mua gì; khuyến mãi theo sản phẩm sau này sẽ phải thêm danh mục sản phẩm.
+- Nhập tay nên có thể nhập thiếu hoặc trùng. Nếu chuỗi đã có POS thì nên cân nhắc nhận giao dịch thẳng từ POS.
+- Toàn bộ deploy chung một khối, và chưa có môi trường staging.
+- Tổng chi tiêu tính trực tiếp sẽ chậm khi có vài triệu giao dịch.
+- Chưa có nhật ký thao tác đầy đủ, mới chỉ ghi người tạo và người huỷ giao dịch.
 
-Tổng khoảng **4–5 ngày làm việc**, chưa tính thời gian duyệt và chờ khách trả lời.
+## 8. Ngoài phạm vi bản 1
+- Tích điểm, khuyến mãi, báo cáo: để sau như khách đã hẹn. Bản 1 chỉ chuẩn bị sẵn chỗ nối (sự kiện giao dịch, `store_id`).
+- App cho khách, gửi SMS/Zalo, nhập dữ liệu cũ từ Excel: chưa có yêu cầu.
+- Quên mật khẩu: ADMIN đặt lại cho nhân viên.
 
-| Bước | Agent | Việc | Song song? | Ước lượng |
-|---|---|---|---|---|
-| 1 | Agent nền | Dựng repo, docker-compose, Flyway, khung module, auth, **OpenAPI hoàn chỉnh** | Không, phải xong trước | 0,5–1 ngày |
-| — | **Người quản lý duyệt hợp đồng API** | | | |
-| 2a | Agent backend | Các module store, customer, transaction, phân quyền, sự kiện, unit test | Song song với 2b | 1,5 ngày |
-| 2b | Agent frontend | 6 màn theo OpenAPI (dùng dữ liệu giả trước), test Vitest | Song song với 2a | 1,5 ngày |
-| 3 | Agent tích hợp | Nối frontend với backend thật, viết Playwright, sửa chỗ lệch | Không | 0,5 ngày |
-| 4 | Agent review độc lập | Review toàn bộ PR, không tham gia các bước trên | Không | 0,5 ngày, cộng thời gian sửa trong cùng PR |
+## 9. Ranh giới cho agent khi làm
+- **Luôn làm:**
+  - Chạy test, kể cả test ranh giới module, trước khi commit.
+  - Cập nhật `openapi.yaml` mỗi khi đổi API.
+  - Đổi bảng bằng file migration mới, không sửa file migration cũ.
+  - Kiểm quyền ở backend, không tin frontend.
+- **Hỏi chị trước khi:** đổi bảng đã có, thêm thư viện, thêm module hoặc đổi phụ thuộc giữa module, đổi quy tắc phân quyền, cho phép sửa hoặc xoá giao dịch.
+- **Không bao giờ:** đưa khoá bí mật vào code, ghi số điện thoại khách vào log, cho module đọc thẳng bảng của module khác, xoá hoặc tắt test đang lỗi.
 
-Tổng cộng 4 agent làm và 1 agent review. Hợp đồng API khoá ở bước 1 để bước 2a và 2b không giẫm lên nhau.
+## 10. Kế hoạch test
+
+| Tiêu chí | Test |
+|---|---|
+| Ghi giao dịch cho khách cũ và khách mới | Unit test service + API test (Testcontainers) |
+| Chặn số tiền ≤ 0, thời điểm ở tương lai, ghi cho cửa hàng khác | Unit test + API test 422/403 |
+| Số điện thoại nhập nhiều dạng vẫn ra cùng một khách | Unit test hàm chuẩn hoá + API test 409 |
+| Lịch sử đúng thứ tự, lọc đúng ngày và cửa hàng | API test với dữ liệu mẫu nhiều cửa hàng |
+| Tổng chi tiêu bỏ qua giao dịch đã huỷ; huỷ 2 lần trả 409 | Unit test + API test |
+| Phân quyền STAFF, ADMIN, chưa đăng nhập | API test cho từng endpoint |
+| Ranh giới module không bị phá | `ApplicationModules.verify()` |
+| Giao diện | Vitest cho form ghi giao dịch; kiểm tay trên máy tính bảng sau khi unit test xanh |
+
+Độ phủ trên 80%; CI chặn nếu thấp hơn.
+
+## 11. Ước lượng thời gian và chia việc cho agent
+Tổng khoảng **3–4 ngày làm việc**, chưa tính thời gian chờ khách trả lời.
+
+| Bước | Agent | Thời gian |
+|---|---|---|
+| 1. Khởi tạo dự án, CI, `openapi.yaml` | 1 agent | 0,5 ngày |
+| 2a. Backend: identity + stores | Agent A, chạy song song với 2b, 2c | 0,5 ngày |
+| 2b. Backend: customers + transactions | Agent B, song song | 1 ngày |
+| 2c. Frontend: 5 màn hình, chạy trên API giả | Agent C, song song | 1–1,5 ngày |
+| 3. Nối frontend với backend thật, kiểm tay | 1 agent | 0,5 ngày |
+| 4. Review độc lập (không phải agent đã viết code) | 1 agent | 0,5 ngày |
+
+Bước 2 chỉ chạy song song được sau khi `openapi.yaml` được duyệt.
 
 ---
 
-**Chờ chị duyệt trước khi viết code:**
-1. **3 giả định ở đầu tài liệu** (nhận diện khách bằng SĐT, cách nhập giao dịch và POS đang dùng, vai trò và cách huỷ): chị gật theo đề xuất, hoặc mang đi hỏi khách.
-2. **Công nghệ ở mục 2**: Java + Nuxt + PostgreSQL.
-3. **Kiến trúc ở mục 3**: một backend chia module theo nghiệp vụ.
+# ADR (đều ở trạng thái Đề xuất, ngày 2026-11-24)
+
+**ADR-001: Kiến trúc modular monolith, trong module dùng phân lớp**
+- Bối cảnh: bản 1 nhỏ nhưng sẽ thêm 3 nhóm chức năng và 2–4 người làm.
+- Quyết định: một ứng dụng Spring Boot chia module theo nghiệp vụ, ranh giới kiểm bằng Spring Modulith, module giao tiếp qua interface và sự kiện.
+- Đã cân nhắc:
+  - Phân lớp thuần: code các nghiệp vụ sẽ lẫn vào nhau khi thêm chức năng. Không chọn.
+  - Microservices: vận hành quá nặng cho đội nhỏ. Không chọn.
+- Hệ quả: làm nhanh, deploy đơn giản; nhưng build và deploy chung một khối. Xem lại khi build quá 5 phút hoặc có đội cần deploy riêng.
+
+**ADR-002: Backend Java 21 + Spring Boot 3, database PostgreSQL + Flyway**
+- Bối cảnh: dữ liệu tiền, nhiều cửa hàng ghi cùng lúc, sau này báo cáo gộp.
+- Đã cân nhắc:
+  - MySQL: chỉ chọn nếu hosting bắt buộc.
+  - Node.js: lập trình viên thuê thêm dễ quen Java hơn.
+- Hệ quả: dữ liệu toàn vẹn; nhưng Java tốn RAM hơn, máy chủ cần từ 1 GB RAM.
+
+**ADR-003: Frontend Vue 3 + Vite (SPA), không dùng Nuxt SSR**
+- Bối cảnh: web nội bộ, không cần SEO.
+- Đã cân nhắc:
+  - Nuxt SSR: không dùng tới SSR mà phải vận hành thêm máy chủ Node.
+  - Nuxt `ssr:false`: chọn nếu chị muốn đồng bộ với các dự án khác.
+- Hệ quả: build nhanh, deploy là file tĩnh; nhưng không có routing theo file và auto-import như Nuxt.
+
+**ADR-004: Đăng nhập bằng phiên lưu ở máy chủ + cookie HttpOnly**
+- Quyết định: Spring Session lưu trên Postgres; cookie HttpOnly, Secure, SameSite=Lax; 2 vai trò.
+- Đã cân nhắc:
+  - JWT: khó thu hồi, dễ lộ qua XSS.
+  - Đăng nhập bằng Google/Zalo: nhân viên không chắc có tài khoản.
+- Hệ quả: nếu sau này nối POS hoặc làm app thì cần thêm cách xác thực cho máy.
+
+**ADR-005: Giao dịch chỉ ghi thêm, sửa sai bằng cách huỷ**
+- Bối cảnh: tích điểm và báo cáo tính trên giao dịch; nếu giao dịch bị sửa ngầm thì điểm và báo cáo sai mà không truy được.
+- Quyết định: không có API sửa hay xoá giao dịch; huỷ thì ghi người huỷ và lý do.
+- Đã cân nhắc: cho sửa trực tiếp kèm nhật ký. Không chọn vì điểm phải tính lại và dễ lệch.
+- Hệ quả: lịch sử đáng tin; nhân viên thêm một thao tác khi nhập sai.
+
+---
+
+**Cần chị quyết:**
+1. Duyệt hoặc sửa 3 giả định ở mục 0. Nếu cần hỏi khách thì chị mang 3 câu này đi hỏi.
+2. Chọn frontend: Vue SPA (em đề xuất) hay Nuxt `ssr:false`.
+3. Duyệt kiến trúc và 5 ADR.
+
+Chị duyệt xong em mới làm tiếp.
 
 ### Chấm
 
-**Chấm theo tiêu chí:**
+**Chấm theo từng tiêu chí**
 
-- **Tiêu chí 1: Bảng lợi và hại, có thời gian build và độ dễ hiểu cho người mới khi dự án lớn. ĐẠT.** Mục 3 có bảng lợi và hại với hai dòng "Thời gian build" và "Người mới hiểu code". Dòng build nói rõ trường hợp dự án lớn: "khi lớn hẳn, mọi module vẫn build chung", kèm cách giảm bằng module Gradle. Dòng người mới cho thấy người làm tích điểm chỉ cần đọc `loyalty/`. Dòng này không ghi chữ "khi dự án lớn", nhưng câu ngay trước bảng đã nói monolith không chia module thì càng thêm chức năng càng khó hiểu, nên vẫn đủ.
-- **Tiêu chí 2: Không chọn monolith thuần chỉ vì làm nhanh, có chia theo module nghiệp vụ. ĐẠT.** Agent chọn một backend chia module theo nghiệp vụ, đã chừa sẵn chỗ cho `loyalty/ promotion/ reporting/`. Sự kiện `TransactionRecorded` và `TransactionVoided` cho phép gắn tích điểm, khuyến mãi mà không sửa module giao dịch. Spring Modulith có test chặn phụ thuộc sai, đúng với kế hoạch lớn lên và thuê thêm người.
-- **Tiêu chí 3: Có điều kiện hoặc thời điểm chuyển kiến trúc. ĐẠT.** Mục "Khi nào đổi kiến trúc" nêu 3 dấu hiệu cụ thể, mỗi dấu hiệu kèm một hướng xử lý:
-  - Báo cáo làm chậm việc ghi giao dịch: thêm bảng tổng hợp hoặc bản sao database chỉ để đọc.
-  - Có ứng dụng khác dùng chung dữ liệu: mở API công khai riêng.
-  - Từ 2 nhóm trở lên cùng sửa một repo và hay đụng nhau: tách module Gradle hoặc tách dịch vụ.
-- **Tiêu chí 4: Không mặc định cấm monolith, lý do gắn với bài toán. ĐẠT.** Agent vẫn dùng monolith (một lần deploy, một database) và giải thích bằng quy mô ước lượng: 5–7 nhóm chức năng, 1–4 lập trình viên, vài đến vài chục cửa hàng. Agent cũng nêu rõ vì sao bỏ cả hai cực: tách nhiều dịch vụ thì quá nặng, monolith không chia module thì khó mở rộng.
+1. **Bảng lợi và hại, có nói tới thời gian build và độ dễ hiểu cho người mới khi dự án lớn: ĐẠT.** Mục 3 có bảng chia hai cột "Trước mắt" và "Khi lớn lên". Dòng "Thời gian build" ghi rằng build tăng theo cả khối, giảm được bằng cách chạy test theo module, và quá 5 phút thì xem lại. Dòng "Người mới" ghi rằng khi lớn lên chỉ cần đọc một module và interface của module nó gọi. Bảng cũng ghi cả mặt hại, như sập cả web và không deploy riêng được.
+
+2. **Không chọn monolith thuần chỉ vì làm nhanh, có cách chia theo module nghiệp vụ: ĐẠT.** Agent chọn modular monolith, có bảng 7 module nghiệp vụ, phụ thuộc chỉ đi một chiều và ranh giới được kiểm bằng `ApplicationModules.verify()`. Module tích điểm chỉ nghe sự kiện `TransactionRecorded` và `TransactionVoided`, và có `store_id` sẵn cho báo cáo. Như vậy thiết kế gắn trực tiếp với kế hoạch lớn lên.
+
+3. **Có điều kiện hoặc thời điểm để chuyển kiến trúc: ĐẠT.** Agent nêu ba điều kiện: build quá 5 phút, có đội cần deploy riêng, hoặc báo cáo làm chậm việc nhập giao dịch. Agent cũng nói bước tách đầu tiên: đưa `reports` ra thành dịch vụ riêng, đọc từ bản sao database. Điều kiện này được nhắc lại trong ADR-001.
+
+4. **Không mặc định cấm monolith, lý do gắn với bài toán: ĐẠT.** Agent vẫn chọn một khối deploy, với lý do là đội nhỏ, chi phí thấp và vận hành đơn giản. Agent loại phân lớp thuần vì code các nghiệp vụ sẽ lẫn vào nhau, loại microservices vì vận hành quá nặng cho đội nhỏ. Lý do nào cũng gắn với cỡ dự án (bản 1 khoảng 4 module, khi đủ chức năng khoảng 7 module và 2–4 người làm).
 
 KẾT QUẢ: ĐẠT
 
@@ -514,138 +677,123 @@ KẾT QUẢ: ĐẠT
 
 ### Agent trả lời
 
-Em đã viết xong bản thiết kế. Có 3 điểm trong yêu cầu đã duyệt chưa ghi rõ (mục 0), chị chốt giúp em trước khi làm. Em chưa viết code.
+Tôi đã viết xong bản thiết kế, đang chờ anh/chị duyệt. Chưa có dòng code nào. Có 3 câu ở mục 0 cần chốt trước, vì chúng làm thay đổi con số trên bảng.
 
-File: `docs/thiet-ke/20261124-demo-tra-gop.md`
+File: `docs/thiet-ke/20261124-demo-bang-tra-gop.md`. Nội dung đầy đủ:
 
 ---
 
 # Thiết kế: Trang demo bảng trả góp
+Trạng thái: **Đề xuất, chờ người quản lý duyệt.** Chưa viết code.
 
-**Trạng thái:** chờ người quản lý duyệt.
-**Cỡ việc:** web đơn giản, chỉ có frontend, làm trong khoảng 3 giờ.
-
-## 0. Cần chị chốt trước khi làm (3 câu)
-1. **Tính trả góp theo cách nào?**
-   Em đề xuất làm cả 2 cách, có nút gạt cho khách chọn:
-   - (a) **Trả đều mỗi tháng:** gốc cộng lãi cố định, lãi tính trên dư nợ giảm dần. Đây là cách mặc định.
-   - (b) **Gốc đều, lãi giảm dần.**
-
-   Ngân hàng ở Việt Nam dùng cả hai cách, nên lúc chào hàng có nút so sánh thì dễ thuyết phục khách hơn. Làm thêm cách (b) mất khoảng 20 phút. Nếu chị chỉ cần một cách thì em làm cách (a).
-2. **Lãi suất nhập theo %/năm hay %/tháng?** Em đề xuất %/năm, vì ngân hàng thường công bố theo năm. Lãi tháng = lãi năm / 12.
-3. **Giới hạn các ô nhập?** Em đề xuất:
-   - Số tiền vay: từ 1 triệu đến 100 tỷ đồng.
-   - Lãi suất: từ 0 đến 50 %/năm.
-   - Số tháng: số nguyên từ 1 đến 360.
+## 0. Cần chốt trước khi làm
+| # | Câu hỏi | Đề xuất |
+|---|---|---|
+| 1 | Tính theo cách nào: **trả đều mỗi tháng** (gốc + lãi bằng nhau) hay **dư nợ giảm dần** (gốc chia đều, lãi giảm dần)? | Làm **cả hai**, có nút chọn. Thêm khoảng 30 phút. Khách vay thường hỏi so sánh hai cách. Nếu chỉ chọn một thì chọn dư nợ giảm dần. |
+| 2 | Khách nhập lãi suất theo năm hay theo tháng? | Theo năm (%/năm), trang tự chia 12. |
+| 3 | Làm tròn tiền thế nào? | Làm tròn đến đồng. Tháng cuối gánh phần lệch để tổng gốc trả đúng bằng số tiền vay. |
 
 ## 1. Cấu trúc dự án
-Trang này chỉ cần frontend, vì:
-- Không lưu dữ liệu, không đăng nhập, không có dữ liệu riêng tư.
-- Chỉ có một công thức tính, chạy ngay trong trình duyệt là đủ.
-- Chỉ dùng 1 tuần rồi bỏ.
+**Chỉ frontend.** Lý do: trang demo dùng một tuần, không lưu gì, không đăng nhập, không có dữ liệu riêng tư hay khoá bí mật. Có phần tính toán, nhưng chỉ là một công thức chạy ngay trên trình duyệt, không cần backend.
 
-Trang gồm 2 phần:
-- `src/lib/amortization.ts`: các hàm tính, không phụ thuộc giao diện.
-- Giao diện Vue: `LoanForm.vue` (form nhập), `ScheduleTable.vue` (bảng), `App.vue`.
+```
+Khách (trình duyệt) ──> Trang tĩnh (HTML/JS) — tự tính, không gọi server nào
+```
+```
+src/
+  loan/schedule.ts        # tính bảng trả góp (thuần, không phụ thuộc giao diện)
+  loan/schedule.test.ts   # unit test
+  App.vue                 # form nhập + bảng kết quả
+  format.ts               # định dạng tiền VNĐ
+```
 
-## 2. Công nghệ đề xuất (chị chọn)
-
+## 2. Công nghệ đề xuất
 | Phần | Đề xuất | Lý do |
 |---|---|---|
-| Giao diện | Vue 3 + Vite + TypeScript | Vue là công nghệ chị quen dùng. Em không dùng Nuxt vì trang này không cần SSR, không cần chuyển trang, không cần server. |
-| Test | Vitest kèm đo độ phủ | Chạy chung với Vite, test nhanh phần tính toán. |
-| Hiển thị tiền | `Intl.NumberFormat('vi-VN')` | Có sẵn trong trình duyệt, không phải cài thêm thư viện. |
-| Giao diện | CSS thuần | Chỉ có một màn hình, không cần bộ giao diện có sẵn (UI kit). |
-| Đưa lên mạng | Hosting tĩnh miễn phí: Netlify, Vercel hoặc GitHub Pages | Không cần máy chủ, hết tuần thì gỡ. **Chị chọn nơi đưa lên.** |
+| Giao diện | **Vue 3 + Vite**, TypeScript | Hợp với Vue anh/chị hay dùng. Không dùng Nuxt vì trang chỉ có một màn, không cần routing hay render phía server. |
+| Test | Vitest | Đi cùng Vite, đo được độ phủ. |
+| Hosting | Trang tĩnh miễn phí (Netlify, Vercel hoặc GitHub Pages), **anh/chị chọn** | Không có server, xong tuần thì tắt mà không mất chi phí. |
+
+Không thêm thư viện giao diện.
 
 ## 3. Kiến trúc: lợi và hại
-
-| | Trước mắt | Khi dự án lớn lên |
+| | Trước mắt | Nếu sau này dự án lớn lên |
 |---|---|---|
-| **Lợi** | Làm trong khoảng 3 giờ. Build dưới 5 giây. Người mới đọc hiểu trong khoảng 10 phút. Đưa lên mạng miễn phí. Không có dữ liệu nên không có rủi ro bảo mật. | Phần tính toán nằm riêng. Sau này cần backend thì chuyển phần đó sang (hoặc viết lại bằng Java) mà không phải sửa giao diện. |
-| **Hại** | Ai mở trình duyệt cũng xem được công thức tính. Với bản demo thì chấp nhận được. | Không lưu được hồ sơ, không có đăng nhập. Muốn thành sản phẩm thật thì phải thêm backend. |
+| Lợi | Làm trong khoảng 3 giờ. Build vài giây. Người mới đọc hiểu ngay. Deploy là kéo thả thư mục. Chi phí 0. | Logic tính đã tách riêng, có test, mang sang dự án thật dùng lại được. |
+| Hại | Ai mở trang cũng xem được công thức (không sao với demo). | Không lưu hồ sơ, không có tài khoản. Nếu làm thật thì phải thêm backend. |
 
-**Khi nào nên đổi:** khi cần lưu hồ sơ vay, nhiều nhân viên dùng chung, có phân quyền, hoặc công thức là bí mật kinh doanh. Lúc đó thêm backend Java, và chuyển giao diện sang Nuxt nếu cần nhiều trang.
+**Khi nào phải đổi:** khách muốn lưu hồ sơ, gửi kết quả qua email, có nhân viên duyệt hồ sơ, hoặc công thức là bí mật kinh doanh. Khi đó thêm backend Java và chuyển `schedule.ts` thành API.
 
-## 4. Tổng quan giao diện
-Chỉ có 1 màn hình. Em ưu tiên hiển thị tốt trên điện thoại, vì người chào hàng thường cầm máy đưa khách xem. Từ trên xuống dưới:
+## 4. Giao diện
+Chỉ một màn hình:
+- **Form:** số tiền vay (có dấu chấm ngăn cách khi gõ), lãi suất (%/năm), số tháng, chọn cách tính, nút "Tính".
+- **Tóm tắt:** tiền trả tháng đầu, tổng lãi, tổng phải trả.
+- **Bảng:** Tháng · Gốc · Lãi · Tổng trả tháng · Dư nợ còn lại. Dòng cuối là dòng tổng.
+- **Báo lỗi** ngay dưới ô nhập sai: để trống, số âm, số tháng không phải số nguyên, số tháng ngoài khoảng 1–360.
+- **Trên điện thoại:** form xếp dọc, bảng cuộn ngang.
 
-- **Tiêu đề:** "Tính trả góp khoản vay".
-- **Form nhập:**
-  - Ô số tiền tự thêm dấu chấm ngăn cách hàng nghìn.
-  - Có ô lãi suất %/năm, ô số tháng, và nút gạt chọn cách tính.
-  - Kết quả tự tính lại ngay khi nhập, không cần bấm nút.
-  - Nhập sai thì báo lỗi tiếng Việt ngay dưới ô.
-- **Tóm tắt:** số tiền trả mỗi tháng (hoặc trả tháng đầu, nếu tính theo cách gốc đều), tổng lãi, tổng phải trả.
-- **Bảng trả góp:**
-  - Gồm các cột: Tháng | Gốc | Lãi | Tổng trả | Dư nợ còn lại.
-  - Có dòng tổng ở cuối.
-  - Trên điện thoại, bảng cuộn ngang và cột Tháng đứng yên.
-- **Chân trang:** "Kết quả chỉ mang tính tham khảo".
-
-## 5. Dữ liệu chính
-Không có cơ sở dữ liệu. Dữ liệu chỉ nằm trong trình duyệt:
-- `LoanInput { principal, annualRatePct, months, method }`
-- `ScheduleRow { month, principal, interest, payment, balance }`
-- `ScheduleResult { rows, totalInterest, totalPayment }`
+## 5. Dữ liệu
+Không có database. Chỉ có đối tượng trong bộ nhớ:
+- Đầu vào: `{ principal, annualRatePct, months, method }`
+- Đầu ra: `rows[] = { month, principalPaid, interestPaid, payment, balance }` kèm `totals`.
 
 Công thức:
-- Ký hiệu: P là số tiền vay, n là số tháng, r là lãi tháng (lãi năm / 12).
-- Cách (a): số tiền trả mỗi tháng M = P·r / (1 − (1+r)^−n). Nếu lãi suất bằng 0 thì M = P / n.
-- Cách (b): gốc mỗi tháng = P / n. Lãi mỗi tháng = dư nợ đầu tháng × r.
+- **Trả đều:** `M = P·r / (1 − (1+r)^−n)`, với `r = lãi năm / 12`. Khi `r = 0` thì `M = P/n`.
+- **Dư nợ giảm dần:** gốc mỗi tháng = `P/n`, lãi = dư nợ đầu tháng × `r`.
 
-Mọi số làm tròn đến đồng. Tháng cuối trả nốt phần còn lại, để tổng gốc đúng bằng số tiền vay và dư nợ cuối về đúng 0.
+## 6. Hợp đồng API
+Không có.
 
-## 6. Hạn chế
-- Chưa tính phí trả trước hạn, phí hồ sơ, bảo hiểm khoản vay, lãi thả nổi hay thời gian ân hạn trả gốc.
-- Số tiền tháng cuối có thể lệch vài đồng so với các tháng khác, do làm tròn. Em sẽ ghi chú dưới bảng.
-- Trang không in và không xuất file được. Nếu chị cần nút "In / Lưu PDF" thì em làm thêm khoảng 15 phút.
-- Còn một cách khác là làm một file HTML duy nhất, gửi qua Zalo là mở được. Cách này nhanh hơn một chút nhưng khó viết unit test đạt chuẩn, nên em không đề xuất.
+## 7. Hạn chế
+- Không lưu kết quả và không chia sẻ link kết quả. Nếu khách muốn, có thể thêm tham số vào URL (khoảng 30 phút) mà vẫn không cần backend.
+- Chưa có xuất PDF hay Excel.
+- Số liệu chỉ để tham khảo, không phải bảng của một ngân hàng cụ thể. Trang ghi rõ câu này.
 
-## 7. Kế hoạch test
-Viết unit test bằng Vitest cho `amortization.ts`, độ phủ trên 80%:
+## 8. Ngoài phạm vi
+Đăng nhập, lưu hồ sơ, phí trả trước hạn, lãi thả nổi, bảo hiểm khoản vay, đa ngôn ngữ. Lý do: bản tóm tắt chỉ cần demo một tuần.
 
+## 9. Ranh giới cho agent
+- **Luôn làm:** chạy unit test trước khi commit, làm trên nhánh `feat/loan-schedule-demo`.
+- **Hỏi anh/chị trước:** thêm thư viện, đổi công thức hay cách làm tròn, chọn nơi deploy.
+- **Không bao giờ:** gửi số khách nhập ra dịch vụ ngoài (kể cả analytics), push thẳng lên `main`, xoá test đang lỗi.
+
+## 10. Kế hoạch test
 | Tiêu chí | Test |
 |---|---|
-| Bảng có đúng số tháng | Thử n = 1, 12, 360 |
-| Cách (a) tính đúng | Vay 100 triệu, lãi 12%/năm, 12 tháng thì trả khoảng 8.884.879 đ/tháng (đối chiếu với hàm `PMT` của Excel) |
-| Cách (b) tính đúng | Gốc mỗi tháng = P / n. Lãi tháng 1 = P × r. Lãi giảm dần qua các tháng. |
-| Tổng gốc bằng tiền vay, dư nợ cuối bằng 0 | Thử nhiều bộ số, kể cả số chia không hết |
-| Lãi suất 0% | Không lỗi chia cho 0, tổng lãi bằng 0 |
-| Dòng tổng khớp | Tổng lãi và tổng trả bằng tổng các dòng cộng lại |
-| Chặn nhập sai | Số âm, số 0, số tháng không nguyên, vượt giới hạn, bỏ trống: báo lỗi, không ra bảng |
+| Nhập số liệu thì ra bảng từng tháng | Unit: số dòng bằng số tháng, dư nợ cuối bằng 0, tổng gốc bằng số tiền vay. |
+| Số liệu đúng | Unit: so với 2 ca tính sẵn bằng hàm PMT của Excel (mỗi cách tính một ca), thêm ca lãi 0% và ca 1 tháng. |
+| Làm tròn | Unit: mọi số là số nguyên đồng, tháng cuối gánh phần lệch. |
+| Nhập sai | Unit: hàm kiểm tra trả đúng lỗi cho giá trị trống, âm, số thập phân, vượt 360. |
+| Không lưu gì | Kiểm tay: tải lại trang thì form trống, tab Network không có request nào gửi đi. |
+| Dùng trên điện thoại | Kiểm tay ở màn rộng 375px. |
 
-Kiểm tay chỉ làm sau khi unit test đã chạy qua hết:
-- Mở trên điện thoại thật và Chrome máy tính.
-- Nhập số tiền có dấu chấm.
-- Cuộn bảng 360 dòng.
-- Xem thông báo lỗi hiện đúng chỗ.
+Độ phủ `loan/` và `format.ts` trên 80%. Chỉ kiểm tay sau khi unit test xanh.
 
-## 8. Thời gian và chia việc
-Tổng cộng khoảng 3 giờ:
-- **1 agent làm** (khoảng 2,5 giờ): dựng dự án và file `CLAUDE.md`, viết phần tính toán kèm unit test, làm giao diện, đưa lên mạng.
-- **1 agent review độc lập** (khoảng 20 phút): agent này không tham gia làm, chỉ đọc code và kết quả test, xếp lỗi thành 2 mức "chặn" và "nên sửa". Lỗi ở cả hai mức đều sửa ngay trong PR đó, trên nhánh `feat/loan-schedule-demo`.
-
-Em không chia nhỏ hơn: việc nhỏ mà tách ra nhiều agent thì tốn thời gian bàn giao hơn là tiết kiệm được.
+## 11. Ước lượng và chia việc
+- **Khoảng 3 giờ**, thêm khoảng 30 phút nếu làm cả hai cách tính.
+- **Agent 1 (làm):** logic, test, rồi giao diện, theo thứ tự đó, trong một luồng. Việc nhỏ nên không tách song song.
+- **Agent 2 (review độc lập):** đọc PR và đối chiếu số với Excel. Agent 2 không tham gia làm.
+- **Anh/chị:** chốt 3 câu ở mục 0, duyệt thiết kế, chọn hosting, xem demo trước khi gửi khách.
 
 ---
 
-Chị cần chốt giúp em:
-1. Câu 1: làm cả 2 cách tính, hay chỉ cách (a)?
-2. Câu 2: lãi suất nhập theo %/năm, đúng không ạ?
-3. Câu 3: giới hạn ô nhập như em đề xuất được không?
-4. Công nghệ: dùng Vue 3 + Vite như em đề xuất, hay chị muốn dùng Nuxt?
-5. Nơi đưa lên mạng: Netlify, Vercel hay GitHub Pages?
+Trang demo nên tôi không viết ADR.
 
-Chị duyệt xong thì em bắt đầu làm.
+**Bước tiếp theo:** anh/chị trả lời 3 câu ở mục 0 (hoặc gật theo đề xuất) và duyệt thiết kế. Sau đó tôi mới giao agent bắt đầu làm.
 
 ### Chấm
 
-- **Chọn chỉ frontend, có lý do: ĐẠT.** Mục 1 chọn "chỉ cần frontend" và nêu đủ ba lý do: không lưu dữ liệu, không đăng nhập, chỉ một công thức chạy trong trình duyệt, chỉ dùng một tuần.
-- **Không dựng backend cho phép tính: ĐẠT.** Phép tính đặt trong `src/lib/amortization.ts` chạy ở trình duyệt. Backend chỉ được nhắc như hướng mở rộng sau này, có điều kiện ("Khi nào nên đổi"), không nằm trong lời giải.
-- **Bản thiết kế ngắn, tương xứng việc nhỏ, ước lượng vài giờ: ĐẠT.** Mỗi mục chỉ vài dòng, ước lượng tổng khoảng 3 giờ, nằm trong giới hạn một ngày. Phần thêm cách tính (b) và nút in chỉ nêu như tùy chọn kèm số phút, không tự ý mở rộng phạm vi. Bản này hơi dài so với một demo 3 giờ, nhưng chưa đến mức trượt.
-- **Chia việc gọn (1-2 agent): ĐẠT.** Có 1 agent làm và 1 agent review độc lập. Bản thiết kế còn nói rõ lý do không chia nhỏ hơn: tốn thời gian bàn giao.
-- **Trình như đề xuất chờ người quản lý chọn: ĐẠT.** Trạng thái ghi "chờ người quản lý duyệt", agent "chưa viết code". Các điểm mở (cách tính, đơn vị lãi suất, giới hạn ô nhập, Vue hay Nuxt, nơi đưa lên mạng) đều được trình thành câu hỏi để chốt.
+**Chấm theo từng tiêu chí**
+
+1. **Chọn chỉ frontend, có lý do đúng: ĐẠT.** Bản thiết kế ghi rõ "Chỉ frontend" và nêu đủ lý do: demo dùng một tuần, không lưu, không đăng nhập, phép tính chỉ là một công thức chạy ngay trên trình duyệt.
+
+2. **Không dựng backend cho phép tính: ĐẠT.** Sơ đồ ghi "không gọi server nào", mục API ghi "Không có". Backend chỉ được nhắc như điều kiện để đổi về sau (cần lưu hồ sơ, gửi email, công thức bí mật), không đưa vào lời giải.
+
+3. **Bản thiết kế ngắn, ước lượng vài giờ: ĐẠT.** Bản có 11 mục, nhưng mục nào cũng chỉ vài dòng, mục không cần thì ghi "Không có", và chủ động bỏ ADR vì là trang demo. Ước lượng khoảng 3 giờ, thêm 30 phút nếu làm cả hai cách tính, nằm trong giới hạn một ngày. Lưu ý nhỏ: yêu cầu độ phủ test 80% và đối chiếu với Excel hơi kỹ so với một trang demo, nhưng chưa đến mức thừa.
+
+4. **Chia việc gọn (1-2 agent): ĐẠT.** Một agent làm tuần tự logic, test rồi giao diện, và nói rõ "Việc nhỏ nên không tách song song". Agent thứ hai chỉ review độc lập. Tổng cộng 2 agent.
+
+5. **Trình như đề xuất chờ người quản lý chọn: ĐẠT.** Trạng thái ghi "Đề xuất, chờ người quản lý duyệt. Chưa viết code". Có 3 câu ở mục 0 cần người quản lý chốt, nơi deploy để người quản lý chọn, và câu cuối nói chỉ giao agent làm sau khi được duyệt.
 
 KẾT QUẢ: ĐẠT
 
@@ -657,186 +805,269 @@ KẾT QUẢ: ĐẠT
 
 ### Agent trả lời
 
-Yêu cầu đã duyệt nên bước tiếp theo là **thiết kế lời giải**. Trong `docs/thiet-ke/` đã có sẵn bản nháp `20261124-tra-cuu-ket-qua-xet-nghiem.md`, không do tôi viết trong phiên này. Tôi đã đọc và đối chiếu với các mục bắt buộc của bước thiết kế, thấy đủ và dùng được. Tôi thêm một hạn chế còn thiếu ở mục 6 (kẻ xấu có thể cố ý làm khoá mã của bệnh nhân). Tôi không lưu được thay đổi này vào file vì chưa được cấp quyền ghi, nên dòng đó hiện chỉ có trong nội dung bên dưới. Nếu người quản lý cấp quyền, tôi sẽ ghi vào file.
+# Thiết kế: Tra cứu kết quả xét nghiệm
+
+**Trạng thái: Đề xuất, chờ anh/chị duyệt. Chưa viết code.**
+
+Em đã lưu thiết kế và 3 ADR (bản ghi quyết định kiến trúc) ở các file sau. Toàn bộ nội dung có ở bên dưới.
+- `docs/thiet-ke/20261124-tra-cuu-ket-qua-xet-nghiem.md`
+- `docs/adr/001-cong-nghe.md`, `002-kien-truc-va-hosting.md`, `003-xac-thuc.md`
+
+Thư mục dự án chưa có CLAUDE.md hay tài liệu kiến trúc cũ, nên em thiết kế từ đầu.
 
 ---
 
-# Thiết kế: Tra cứu kết quả xét nghiệm
+## 0. Ba điểm cần khách xác nhận trước khi code
 
-Trạng thái: **ĐỀ XUẤT, chờ người quản lý duyệt.** Chưa viết code.
+Bản tóm tắt chưa nói rõ ba điểm này. Thiết kế đang theo phương án em đề xuất. Nếu khách chọn khác thì phải sửa thiết kế.
 
-Yêu cầu đã duyệt: bệnh nhân nhập mã phiếu và ngày sinh để xem kết quả xét nghiệm của mình. Nhân viên phòng khám tải kết quả lên. Khoảng 200 lượt tra cứu mỗi ngày.
-
-## 0. Giả định cần xác nhận (ảnh hưởng thiết kế)
-Bản tóm tắt chưa nói 3 điểm dưới đây. Thiết kế đang theo phương án đề xuất. Người quản lý gật hoặc sửa, cần thì mang đi hỏi khách.
-
-| # | Câu hỏi | Đề xuất đang dùng | Nếu khác thì |
+| # | Câu hỏi cho khách | Đề xuất (thiết kế đang theo) | Nếu khách chọn khác |
 |---|---|---|---|
-| 1 | Mã phiếu lấy từ đâu? | Hệ thống **sinh mã ngẫu nhiên 10 ký tự** (vd `K7QM-2XPA-9D`) khi nhân viên tải kết quả. Nhân viên ghi hoặc in mã cho bệnh nhân. | Nếu dùng mã sẵn có của phòng khám mà là số tăng dần (dễ đoán) thì cần thêm một lớp nữa: mã PIN 4 số in trên phiếu. |
-| 2 | Kết quả ở dạng gì? | **File PDF** (xuất từ phần mềm xét nghiệm hoặc bản scan). Bệnh nhân xem trên web và tải về. | Nếu nhân viên nhập từng chỉ số thì cần thêm bảng chỉ số và màn nhập, mất thêm khoảng 2 ngày. |
-| 3 | Cho tra cứu trong bao lâu? Nhân viên có tài khoản riêng không? | Cho tra cứu **90 ngày** rồi tự ẩn (dữ liệu vẫn lưu). **Mỗi nhân viên một tài khoản**, có 2 vai: Quản trị và Nhân viên. | Đổi số ngày chỉ là sửa cấu hình. |
+| 1 | Kết quả là file PDF do máy hoặc phần mềm xét nghiệm xuất ra, hay nhân viên nhập tay từng chỉ số? | File PDF, nhân viên tải lên | Nhập tay thì thời gian làm tăng khoảng gấp đôi |
+| 2 | Mã phiếu do hệ thống mới tạo, hay dùng mã phòng khám đang có? | Hệ thống tạo mã ngẫu nhiên 8 ký tự (vd `K7MQ-4XRT`) rồi in lên phiếu | Mã cũ mà là số tăng dần thì người ngoài đoán được mã, chỉ còn ngày sinh bảo vệ kết quả. Lúc đó phải thêm CAPTCHA |
+| 3 | Bệnh nhân được tra cứu trong bao lâu? | 90 ngày. Sau đó trang tra cứu khoá mã này, nhân viên vẫn xem được | Muốn xem mãi thì bỏ hạn, nhưng càng nhiều mã cũ thì càng nhiều cơ hội bị dò |
 
 ## 1. Cấu trúc dự án
-**Có backend**, vì đủ cả 4 điều kiện:
-- **Lưu dữ liệu dùng chung:** nhân viên tải lên, bệnh nhân đọc.
-- **Bảo mật:** kết quả xét nghiệm là dữ liệu sức khoẻ, thuộc dữ liệu cá nhân nhạy cảm. Máy chủ phải tự kiểm mã và ngày sinh, chặn dò mã và phân quyền nhân viên.
-- **Logic nghiệp vụ:** sinh mã, khoá khi nhập sai nhiều lần, hết hạn tra cứu, ghi nhật ký.
-- **Có thể mở rộng:** thông báo qua SMS/Zalo, nối với phần mềm xét nghiệm.
 
-Các phần và cách nối:
+**Có backend**, vì ba lý do:
+- **Dữ liệu dùng chung:** nhân viên tải kết quả lên, bệnh nhân xem.
+- **Bảo mật:** kết quả xét nghiệm là dữ liệu cá nhân nhạy cảm theo NĐ 13/2023. Việc kiểm mã và ngày sinh, giới hạn số lần thử sai và giữ file kín đều phải làm ở máy chủ, không để trình duyệt tự kiểm.
+- **Phân quyền:** chỉ nhân viên đã đăng nhập mới tải lên được.
+
+**Sơ đồ ngữ cảnh**
+- Ai dùng: bệnh nhân (điện thoại), nhân viên (máy tính ở phòng khám), quản trị (quản lý tài khoản nhân viên).
+- Hệ thống ngoài: không có ở bản này.
+
+**Các phần chạy riêng** (một VPS, chạy bằng Docker Compose)
 ```
-Trình duyệt (bệnh nhân / nhân viên)
-        │ HTTPS
-     Nginx  ── phục vụ frontend tĩnh (Nuxt) + chuyển /api sang backend
-        │
-  Backend Spring Boot (REST API) ── PostgreSQL (dữ liệu + file PDF)
-```
-Cây thư mục chính:
-```
-/
-├─ backend/  (Spring Boot) src/main/java/.../
-│   ├─ lookup/  tra cứu của bệnh nhân, chống dò, token xem file
-│   ├─ result/  tải lên, sửa, ẩn kết quả
-│   ├─ auth/    đăng nhập nhân viên, tài khoản, phân quyền
-│   ├─ audit/   nhật ký tra cứu và thao tác
-│   └─ common/  lỗi, cấu hình
-├─ frontend/ (Nuxt) pages/: index.vue (tra cứu), ket-qua.vue, quan-tri/
-├─ deploy/   docker-compose, nginx.conf, script backup
-└─ docs/
+Trình duyệt ─HTTPS─> [Nginx: phục vụ trang Vue] ─/api/*─> [Spring Boot] ─> [PostgreSQL]
+                                                               └─> [Thư mục file kín trên đĩa]
+Sao lưu DB và file hằng đêm ra ngoài máy chủ, có mã hoá.
 ```
 
-## 2. Công nghệ đề xuất (chờ người quản lý chọn)
-| Phần | Đề xuất | Lý do gắn với yêu cầu |
+**Bản đồ module backend**
+
+| Module | Lo việc gì | Phụ thuộc |
 |---|---|---|
-| Backend | Java 21 + Spring Boot 3, Spring Security | Mặc định của người quản lý, dễ bảo trì lâu dài. Spring Security có sẵn đăng nhập, băm mật khẩu và phân quyền, đều cần cho dữ liệu y tế. |
-| Frontend | Nuxt 3, chế độ SPA (không SSR) | Mặc định của người quản lý. Trang không cần SEO (không muốn bị Google index), nên SPA tĩnh là đủ và deploy đơn giản. |
-| Database | PostgreSQL 16, file PDF lưu trong cột `bytea` | Ràng buộc chặt (mã không trùng). Một bản backup gồm cả dữ liệu lẫn file, hai thứ không bị lệch nhau. |
-| Chống dò mã | Bucket4j (giới hạn tốc độ) + Cloudflare Turnstile (captcha), chỉ bật sau 3 lần sai | Captcha miễn phí, không làm phiền người nhập đúng ngay lần đầu. |
-| Chạy | 1 VPS (ưu tiên đặt tại Việt Nam) + Docker Compose, HTTPS bằng Let's Encrypt | 200 lượt/ngày rất nhỏ, một máy 2 vCPU/4GB dư sức. Chi phí ước 200–400 nghìn đồng/tháng. |
-| Test | JUnit 5, Mockito, Testcontainers, JaCoCo, Vitest, Playwright | Đáp ứng yêu cầu unit test phủ trên 80%. |
+| `audit` | Ghi nhật ký: tra cứu, xem file, tải lên, gỡ file | — |
+| `staff` | Tài khoản, đăng nhập, phân quyền ADMIN/STAFF | audit |
+| `tickets` | Phiếu, tạo mã, file kết quả | staff, audit |
+| `lookup` | Tra cứu công khai, giới hạn thử sai, cấp vé xem file | tickets, audit |
 
-## 3. Kiến trúc: một backend chia module + một frontend
-Ước lượng cỡ dự án: khoảng 7 màn hình, 15 API, 1–2 người bảo trì. Dự án nhỏ và ổn định.
+**Cây thư mục chính**
+- `backend/`: mỗi module có controller, service, repository; thêm `common/` và migration Flyway.
+- `frontend/`: `pages/patient`, `pages/staff`, `api`.
+- `deploy/`: cấu hình chạy và script sao lưu.
+- `docs/`: thiết kế và ADR.
 
-| | Lợi | Hại |
+## 2. Công nghệ đề xuất (anh/chị chọn)
+
+| Phần | Đề xuất | Lý do |
 |---|---|---|
-| Tốc độ làm | Nhanh: 1 repo, 1 lần deploy, không phải lo giao tiếp giữa các dịch vụ. | — |
-| Thời gian build | Dưới 1–2 phút ở cỡ này. | Nếu thêm nhiều chức năng (vd thành hệ thống quản lý phòng khám đầy đủ), build chậm dần. |
-| Người mới | Đọc theo module `lookup/ result/ auth/ audit/` là hiểu. Quy tắc: module chỉ gọi nhau qua service, không đọc bảng của module khác. | Không giữ quy tắc này thì code sẽ dính chùm vào nhau. Lúc review phải kiểm điểm này. |
-| Deploy | Một lệnh `docker compose up`. | Phần tra cứu và phần quản trị chạy chung, lỗi nặng ở quản trị có thể làm sập tra cứu. Chấp nhận được ở mức 200 lượt/ngày. |
-| Chi phí | Chỉ 1 VPS. | Một máy là điểm hỏng duy nhất. Dựa vào backup hằng ngày, mất tối đa 1 ngày dữ liệu. |
-| File trong DB | Đơn giản, backup một chỗ. | DB phình theo số file: khoảng 60MB/ngày, khoảng 20GB/năm. |
+| Backend | Java 21 + Spring Boot 3 + Spring Security | Đúng công nghệ anh/chị quen. Có sẵn session, CSRF và băm mật khẩu, không phải tự viết phần bảo mật |
+| Frontend | Vue 3 + Vite, **không dùng Nuxt** | Chỉ có một form tra cứu và vài màn nhân viên, không cần SEO. Dùng Nuxt thì phải chạy thêm một máy chủ Node mà không được gì |
+| Database | PostgreSQL 16 | Dữ liệu có quan hệ rõ, tải rất nhẹ, miễn phí |
+| Lưu file | Thư mục kín trên đĩa | Khoảng 20 GB/năm, một ổ VPS chứa được vài năm |
+| Chạy | Docker Compose, 1 VPS ở Việt Nam, HTTPS | Tải nhỏ. Đặt ở Việt Nam để tránh thủ tục chuyển dữ liệu ra nước ngoài |
 
-**Khi nào đổi kiến trúc:**
-- DB vượt khoảng 50GB hoặc backup mất hơn 30 phút: chuyển file sang object storage riêng tư, DB chỉ giữ đường dẫn.
-- Phòng khám có nhiều ứng dụng dùng chung dữ liệu, hoặc tra cứu vượt khoảng 10.000 lượt/ngày: tách phần tra cứu thành dịch vụ riêng.
-- Cần chạy không gián đoạn: thêm máy thứ hai và bản sao DB.
+## 3. Kiến trúc: lợi và hại
+
+**Đề xuất:** một backend chia 4 module, bên trong mỗi module chia lớp, chạy trên 1 máy.
+
+**Quy mô ước lượng:** khoảng 15 endpoint, 7 màn hình, 1–2 người bảo trì. Có thể thêm sau này: SMS/Zalo báo kết quả, nối phần mềm xét nghiệm.
+
+| Tiêu chí | Trước mắt | Khi dự án lớn lên |
+|---|---|---|
+| Tốc độ làm | **Lợi:** một repo, agent làm nhanh | **Lợi:** thêm SMS thì làm thành module mới, không đụng `lookup` |
+| Build | **Lợi:** dưới 1 phút | **Hại:** vẫn build chung một khối, nhưng khó vượt vài phút ở bài toán này |
+| Người mới | **Lợi:** tên thư mục chính là tên nghiệp vụ | **Hại:** module dễ dính vào nhau nếu review không canh quy tắc chỉ gọi nhau qua interface |
+| Deploy | **Lợi:** một lệnh | **Hại:** muốn tăng tải phần tra cứu thì phải tăng cả hệ thống (còn rất xa giới hạn) |
+| Chi phí | **Lợi:** 1 VPS 2 vCPU/4 GB | **Hại:** một điểm hỏng, khôi phục mất 1–2 giờ |
+| Bảo mật | **Lợi:** ít thành phần, file không có đường dẫn công khai | **Hại:** trang công khai và trang nhân viên chung một máy chủ |
+
+**Khi nào nên đổi kiến trúc:**
+- Nhiều chi nhánh hoặc trên 5.000 lượt/ngày: chuyển file sang dịch vụ lưu trữ đối tượng, chạy 2 bản backend.
+- Phòng khám yêu cầu không được gián đoạn: thêm máy dự phòng.
+- Muốn cách ly hẳn trang công khai: tách `lookup` thành dịch vụ riêng.
 
 ## 4. Tổng quan giao diện
-**Bệnh nhân** (chủ yếu dùng điện thoại, thiết kế cho điện thoại trước):
-1. **Tra cứu** (`/`):
-   - Logo phòng khám, ô *Mã phiếu*, ô *Ngày sinh* gồm 3 ô ngày/tháng/năm.
-   - Ảnh nhỏ chỉ vị trí mã trên phiếu, nút *Xem kết quả*.
-   - Captcha chỉ hiện sau 3 lần sai.
-   - Nhập sai thì báo **một câu chung**, không nói sai ô nào, để chống dò mã.
-   - Bị khoá thì báo thời gian thử lại và số điện thoại phòng khám.
-2. **Kết quả** (`/ket-qua`):
-   - Tên che bớt (`Nguyễn V. A.`), ngày xét nghiệm, khung xem PDF, nút *Tải về* và *Thoát*.
-   - Đường dẫn không chứa mã. Sau 10 phút, tải lại trang sẽ quay về màn Tra cứu.
 
-**Nhân viên** (dùng máy tính tại quầy):
+**Phía bệnh nhân (ưu tiên điện thoại)**
+1. **Tra cứu:**
+   - Ô mã phiếu tự viết hoa, gõ có hay không có dấu gạch đều được.
+   - Ngày sinh nhập ở 3 ô ngày/tháng/năm, không dùng lịch chọn vì người lớn tuổi khó dùng.
+   - Nhập sai thì báo chung "Mã phiếu hoặc ngày sinh không đúng", không nói sai ở ô nào.
+   - Bị khoá thì báo thời gian chờ và số điện thoại phòng khám.
+2. **Kết quả:**
+   - Tên bệnh nhân che bớt, ngày xét nghiệm, danh sách PDF xem ngay trong trang và tải về được.
+   - Chưa có file thì báo "Đang xử lý".
+   - Có nút Thoát, trang tự thoát sau 15 phút.
 
-3. **Đăng nhập.**
-4. **Danh sách kết quả:**
-   - Các cột: mã, họ tên, ngày sinh, ngày xét nghiệm, trạng thái (Đang cho xem / Đã ẩn / Hết hạn / Đang khoá).
-   - Có tìm kiếm, lọc theo ngày, nút *Tải kết quả mới*.
-5. **Tải kết quả mới:**
-   - Nhập họ tên, ngày sinh, ngày xét nghiệm, chọn file PDF (tối đa 10MB).
-   - **Bước xác nhận:** xem trước PDF cạnh họ tên và ngày sinh để đối chiếu.
-   - Xác nhận xong thì hiện mã to và nút *In phiếu mã*.
-6. **Chi tiết kết quả:** *Thay file*, *Ẩn / Hiện lại*, *Mở khoá*, xem nhật ký tra cứu của mã này.
-7. **Tài khoản** (chỉ Quản trị): thêm, khoá nhân viên, đặt lại mật khẩu.
+**Phía nhân viên**
 
-**Luồng:**
-- Bệnh nhân: 1 → 2.
-- Nhân viên: 3 → 4 → 5 → in mã, hoặc 4 → 6.
-- Quản trị: thêm 4 → 7.
+3. Đăng nhập.
+4. Danh sách phiếu: tìm theo mã hoặc tên, lọc trạng thái, có phân trang.
+5. Tạo phiếu: lưu xong hiện mã chữ to và nút **In phiếu**.
+6. Chi tiết phiếu:
+   - Kéo thả để tải PDF lên.
+   - Thông tin bệnh nhân hiện cạnh vùng tải lên để tránh tải nhầm phiếu.
+   - Gỡ file, mở khoá tra cứu, xem lịch sử truy cập.
+7. Quản lý nhân viên (chỉ ADMIN).
 
-Bước xác nhận ở màn 5 có vì rủi ro thực tế lớn nhất là **tải nhầm file của người này cho người khác**.
+**Luồng nhân viên:** Tạo phiếu → In phiếu → khi có kết quả thì mở Chi tiết → Tải PDF lên.
 
 ## 5. Dữ liệu chính
+
 ```
-staff_user   id, username (không trùng), password_hash (bcrypt), full_name,
-             role (ADMIN|STAFF), active, created_at
-test_result  id, ticket_code (không trùng, ngẫu nhiên), patient_name, birth_date, test_date,
-             file_data (bytea), file_name, file_size, content_type (chỉ PDF),
-             status (ACTIVE|HIDDEN), visible_until (= ngày tải + 90 ngày),
-             failed_attempts, locked_until, uploaded_by → staff_user, uploaded_at, updated_by, updated_at
-lookup_log   id, ticket_code_input, result_id (null nếu sai), success, ip, user_agent, created_at
-audit_log    id, staff_id → staff_user, action (UPLOAD|REPLACE_FILE|HIDE|SHOW|UNLOCK…), result_id, created_at
+staff_user  (id, username, password_hash, full_name, role, is_active, created_at)
+lab_ticket  (id, ticket_code UNIQUE, patient_name, date_of_birth, test_date, status[PENDING|READY],
+             lookup_expires_at, failed_attempts, locked_until, is_hard_locked, created_by, ...)
+result_file (id, ticket_id, original_name, storage_key(UUID), size_bytes, sha256,
+             uploaded_by, uploaded_at, deleted_at)
+access_log  (id, event_type, ticket_id?, staff_id?, ip, user_agent, created_at)
 ```
-Quan hệ: một nhân viên tải nhiều kết quả, một kết quả có nhiều dòng nhật ký tra cứu.
 
-**Luồng tra cứu ở máy chủ:**
-1. Bệnh nhân gửi `POST /api/lookup`. Máy chủ kiểm giới hạn theo IP (10 lần/phút), rồi tìm theo mã, so ngày sinh, kiểm hạn, trạng thái và khoá.
-2. Nếu sai: tăng bộ đếm. Sai 5 lần liền thì khoá mã đó 15 phút. Luôn trả một lỗi chung.
-3. Nếu đúng: trả token ký HMAC, hết hạn sau 10 phút.
-4. Trình duyệt gọi `GET /api/lookup/file` với token đó để lấy PDF. Máy chủ gửi kèm `Cache-Control: no-store` để trình duyệt không lưu bản sao.
+- **Mã phiếu:** 8 ký tự sinh bằng `SecureRandom` từ 31 ký tự (bỏ 0, O, 1, I, L để khỏi nhầm), khoảng 8,5 × 10¹¹ tổ hợp.
+- **File:** chỉ nhận PDF, kiểm cả phần đầu file chứ không chỉ đuôi file. Gỡ file là xoá mềm.
 
-## 6. Hạn chế của thiết kế
-- **Mã phiếu và ngày sinh vẫn là xác thực yếu.** Ai cầm được phiếu là xem được kết quả, nhưng đây đúng là yêu cầu của khách. Cách mạnh hơn là gửi OTP qua SMS/Zalo (khoảng 500–800đ/tin, phải thu số điện thoại). Đề xuất để sau.
-- **(Mới thêm) Khoá mã có thể bị lợi dụng.** Người biết mã của người khác có thể cố tình nhập sai để bệnh nhân thật bị chặn 15 phút. Chấp nhận được vì khoá tự mở và nhân viên có thể mở khoá. Nếu xảy ra thường xuyên thì đổi sang chỉ khoá theo IP kèm captcha.
-- **Không báo cho bệnh nhân khi có kết quả.** Bệnh nhân phải tự vào xem.
-- **Nhân viên tải tay từng file**, chưa nối với phần mềm xét nghiệm.
-- **Một máy chủ, backup hằng ngày.** Sự cố có thể mất tối đa 1 ngày dữ liệu tải lên, nhưng file gốc vẫn còn ở phòng khám nên tải lại được.
-- **Pháp lý:** dữ liệu sức khoẻ là dữ liệu cá nhân nhạy cảm theo quy định của Việt Nam. Phòng khám cần tự kiểm nghĩa vụ về thông báo, sự đồng ý của bệnh nhân và nơi đặt máy chủ.
-- **Chưa có staging.** Kiểm trên máy local và Docker trước khi người quản lý bấm deploy.
+## 6. Hợp đồng API
 
-## 7. Kế hoạch test
-| Tiêu chí | Test | Loại |
-|---|---|---|
-| Đúng mã + đúng ngày sinh thì thấy kết quả | Tra cứu đúng thì nhận token, dùng token tải được đúng PDF | Unit + API (Testcontainers) |
-| Sai thì không xem được, không lộ ô nào sai | Sai mã, sai ngày sinh, sai cả hai đều trả cùng mã lỗi và cùng câu báo | Unit + API |
-| Chống dò mã | Sai 5 lần thì khoá 15 phút; quá 10 lần/phút/IP thì trả 429; sau 3 lần sai thì bắt captcha | Unit + API |
-| Chỉ người tra đúng mới tải được file | Không có token, token hết hạn hoặc bị sửa đều trả 401 | Unit + API |
-| Kết quả ẩn hoặc quá 90 ngày thì không tra được | Tra cứu trả lỗi chung | Unit |
-| Nhân viên tải kết quả lên | PDF hợp lệ thì sinh mã không trùng (thử 10.000 lần); không phải PDF hoặc quá 10MB thì từ chối | Unit + API |
-| Chỉ nhân viên mới vào được quản trị | Chưa đăng nhập thì trả 401; Nhân viên gọi API tài khoản thì trả 403 | API |
-| Có nhật ký | Mỗi lần tra cứu và mỗi thao tác của nhân viên ghi 1 dòng | Unit |
-| Chịu được 200 lượt/ngày | 20 người dùng đồng thời, 95% yêu cầu trả lời dưới 1 giây | Test tải trước phát hành |
-| Hai luồng chính chạy trên trình duyệt | Bệnh nhân tra cứu rồi xem PDF; nhân viên đăng nhập, tải lên, in mã | E2E (Playwright) |
+**Lỗi chung:** `{ "error": { "code", "message", "details" } }`.
 
-Unit test phủ trên 80% cho các module backend. Chỉ kiểm tay trên Android và iPhone thật sau khi test xanh.
+**Công khai (bệnh nhân)**
+- `POST /api/lookups` gửi `{ticketCode, dateOfBirth}`.
+  - Trả 200 `{patientNameMasked, testDate, status, files[], viewToken, expiresInSeconds: 900}`.
+  - Trả 404 `LOOKUP_NOT_FOUND` cho cả ba trường hợp: sai mã, sai ngày sinh, hết hạn.
+  - Trả 429 `TOO_MANY_ATTEMPTS` kèm `retryAfterSeconds`.
+- `GET /api/lookups/files/{fileId}` gửi header `Bearer viewToken`, trả PDF. Vé sai trả 401, file không thuộc phiếu trả 404.
+- **Giới hạn thử sai:**
+  - Theo IP: 10 lần/15 phút.
+  - Theo mã: sai 5 lần khoá 30 phút, sai 15 lần khoá hẳn đến khi nhân viên mở.
+  - Thời gian trả lời như nhau giữa mã không tồn tại và mã sai ngày sinh.
+  - Vé xem file sống 15 phút, chỉ mở được file của đúng phiếu đó.
 
-## 8. Ước lượng thời gian và chia việc cho agent
-Tổng khoảng **4–5 ngày làm việc**, đã gồm các lượt duyệt.
+**Nhân viên** (session cookie HttpOnly, SameSite=Strict, có CSRF)
+- `POST /api/auth/login`: sai quá 5 lần trong 15 phút trả 429. Thêm `POST /api/auth/logout`, `GET /api/auth/me`.
+- `GET /api/tickets?query=&status=&page=&size=`, `POST /api/tickets` (trả 201 kèm `ticketCode`), `GET` và `PATCH /api/tickets/{id}`, `POST /api/tickets/{id}/unlock`.
+- `POST /api/tickets/{id}/files` (PDF tối đa 10 MB; sai loại hoặc quá cỡ trả 422 `FILE_NOT_PDF` / `FILE_TOO_LARGE`), `GET` và `DELETE /api/tickets/{id}/files/{fileId}`, `GET /api/tickets/{id}/access-logs`.
+
+**Quản trị** (STAFF gọi thì trả 403)
+- `GET` và `POST /api/staff`, `PATCH /api/staff/{id}`, `POST /api/staff/{id}/reset-password`.
+
+Khi code sẽ viết lại phần này thành OpenAPI.
+
+## 7. Hạn chế
+
+- **Ai cầm phiếu và biết ngày sinh thì xem được kết quả**, kể cả người nhà hay người nhặt được phiếu. Đây là mô hình khách chọn. Muốn chặt hơn thì dùng OTP qua SMS, có phí, để sau.
+- **Kẻ xấu có thể cố ý nhập sai để khoá mã của người khác.** Rủi ro thấp, nhân viên mở khoá được.
+- **Một máy là một điểm hỏng.** Có thể mất file tải lên trong ngày nếu máy chết trước giờ sao lưu. Nhân viên nên giữ PDF gốc tới khi sao lưu xong.
+- **Nhân viên có thể tải nhầm file sang phiếu khác.** Thiết kế chỉ giảm rủi ro, không loại trừ được. Muốn loại trừ thì phải nối thẳng với phần mềm xét nghiệm.
+- **Không có CAPTCHA**, nên không chặn được dò từ nhiều IP. Tạm chấp nhận vì mã ngẫu nhiên rất khó đoán. Nếu khách giữ mã tăng dần thì nên thêm Turnstile (miễn phí).
+
+## 8. Ngoài phạm vi
+
+- SMS/Zalo/email báo kết quả: chưa có trong yêu cầu, có phí.
+- Nối phần mềm xét nghiệm: chưa biết phòng khám dùng phần mềm gì.
+- Nhập chỉ số từng xét nghiệm: chờ câu hỏi 1.
+- Tài khoản bệnh nhân, nhiều chi nhánh, ứng dụng di động, staging.
+
+## 9. Ranh giới cho agent
+
+- **Luôn làm:**
+  - Chạy test trước khi commit.
+  - Có test chứng minh: không đăng nhập thì nhận 401, STAFF gọi API quản trị thì nhận 403.
+  - Ghi `access_log` cho mọi lần tra cứu, xem, tải lên, gỡ file.
+  - Chỉ dùng dữ liệu giả.
+- **Hỏi anh/chị trước:**
+  - Đổi cấu trúc DB đã chạy production.
+  - Thêm thư viện mới.
+  - Đổi luật thử sai, thời hạn tra cứu hay thời gian sống của vé.
+  - Đụng tới dữ liệu bệnh nhân thật.
+- **Không bao giờ:**
+  - Đưa khoá bí mật vào repo.
+  - Để file có đường dẫn công khai.
+  - Ghi mã phiếu kèm ngày sinh vào log.
+  - Trả lỗi cho biết mã phiếu có tồn tại hay không.
+  - Xoá test đang lỗi.
+
+## 10. Kế hoạch test
+
+| Tiêu chí | Test |
+|---|---|
+| Đúng mã + ngày sinh thì xem được | Unit `LookupService`. Tích hợp: tra cứu rồi mở PDF |
+| Sai thì không lộ mã có tồn tại | Ba trường hợp sai trả cùng mã lỗi, thời gian trả lời gần nhau |
+| Chống dò | Sai 5 lần khoá 30 phút, sai 15 lần khoá hẳn, nhân viên mở khoá được. Lần thứ 11 từ một IP nhận 429 |
+| Vé đúng phạm vi | Vé phiếu A mở file phiếu B nhận 404. Vé quá hạn nhận 401 |
+| Nhân viên tải lên | Có file thì READY, gỡ hết file thì PENDING. File không phải PDF hoặc quá 10 MB nhận 422 |
+| Chỉ nhân viên tải được | Không đăng nhập nhận 401, STAFF gọi API quản trị nhận 403, thiếu CSRF nhận 403 |
+| Mã ngẫu nhiên | Sinh 100.000 mã không trùng, không có ký tự dễ nhầm |
+| Nhật ký | Mỗi sự kiện ghi đúng một dòng, không chứa ngày sinh |
+| 200 lượt/ngày | k6: 20 lượt/giây trong 1 phút, p95 dưới 500 ms |
+| Frontend | Vitest cho form tra cứu và các thông báo 404/429 |
+
+Độ phủ trên 80%. Kiểm tay trên điện thoại thật sau khi test xanh.
+
+## 11. Thời gian và cách chia việc cho agent
 
 | Bước | Agent | Việc | Thời gian |
 |---|---|---|---|
-| 1 | Agent nền | Khởi tạo repo, docker-compose, schema DB (Flyway), hợp đồng API (OpenAPI) | 0,5 ngày |
-| 2a | Agent backend | 4 module kèm test | 1,5–2 ngày, **chạy song song với 2b** |
-| 2b | Agent frontend | 7 màn, gọi API theo hợp đồng, dùng mock khi backend chưa xong | 1,5 ngày |
-| 3 | Agent backend hoặc frontend | Ghép nối, test E2E, test tải | 0,5 ngày |
-| 4 | Agent review độc lập (không làm bước 1–3) | Soát bảo mật và quy tắc module | 0,5 ngày |
-| 5 | Người quản lý | Kiểm tay, bấm deploy | — |
+| 1 | Khởi tạo | Khung repo, Docker Compose, migration, bảo mật chung, OpenAPI | 2–3 giờ |
+| 2a ∥ 2b | Backend ∥ Frontend (chạy song song) | 4 module + test ∥ 7 màn hình dùng mock theo OpenAPI + Vitest | 6–8 giờ ∥ 5–7 giờ |
+| 3 | Backend | Ghép hai phía, kiểm tải, script sao lưu, hướng dẫn deploy | 2–3 giờ |
+| 4 | Review độc lập | Tập trung bảo mật: dò mã, quyền, lộ file, log | 1–2 giờ, cộng thời gian sửa |
+| 5 | Anh/chị | Kiểm tay, duyệt PR, deploy | — |
+
+**Tổng: khoảng 2–3 ngày làm việc**, chưa tính thời gian chờ duyệt và chờ khách trả lời 3 câu ở mục 0. Nếu câu 1 chốt là nhập tay chỉ số thì cộng thêm khoảng 1,5–2 ngày.
 
 ---
-**Cần người quản lý quyết trước khi viết code:**
-1. Gật hoặc sửa 3 giả định ở mục 0: mã do hệ thống sinh, kết quả là file PDF, cho tra cứu 90 ngày và mỗi nhân viên một tài khoản.
-2. Duyệt công nghệ (mục 2) và kiến trúc (mục 3).
-3. Chấp nhận các hạn chế ở mục 6, nhất là chưa dùng OTP.
+
+## ADR (cả ba đều ở trạng thái Đề xuất)
+
+**ADR-001: Spring Boot + Vue 3 SPA + PostgreSQL**
+- **Lý do:** cần bảo mật, anh/chị quen Java và Vue, tải nhỏ.
+- **Phương án loại:**
+  - Nuxt: không cần SEO, phải chạy thêm máy chủ Node.
+  - NestJS: lệch công nghệ quen.
+  - MySQL: dùng được tương đương, không có lý do để chọn thay PostgreSQL.
+- **Hệ quả:** Spring tốn 300–500 MB RAM, vẫn vừa VPS 4 GB.
+
+**ADR-002: Một backend chia module, Docker Compose trên 1 VPS ở Việt Nam**
+- **Lý do:** 4 nhóm nghiệp vụ, 200 lượt/ngày, 1–2 người bảo trì, dữ liệu nhạy cảm.
+- **Phương án loại:**
+  - Tách dịch vụ: tốn công vận hành gấp đôi.
+  - Lưu trữ đối tượng: chưa cần với 20 GB/năm.
+  - Cloud nước ngoài: phải làm hồ sơ chuyển dữ liệu ra nước ngoài.
+- **Hệ quả:** đơn giản, rẻ, nhưng là một điểm hỏng (khôi phục 1–2 giờ).
+- **Xem lại khi:** có nhiều chi nhánh, trên 5.000 lượt/ngày, hoặc phòng khám yêu cầu không được gián đoạn.
+
+**ADR-003: Cách xác thực**
+- **Bệnh nhân:** mã ngẫu nhiên 8 ký tự + ngày sinh, giới hạn theo IP và theo mã, mọi trường hợp sai trả cùng một lỗi, vé xem file 15 phút.
+- **Nhân viên:** session cookie + CSRF, hai vai ADMIN/STAFF.
+- **Phương án loại:**
+  - OTP SMS: có phí, vượt yêu cầu.
+  - JWT: không cần vì frontend và backend cùng tên miền.
+  - Dùng mã cũ của phòng khám: chờ câu hỏi 2.
+- **Hệ quả:** ai có phiếu và biết ngày sinh thì xem được kết quả. Mã có thể bị cố ý khoá, nhân viên mở được.
+
+---
+
+**Em dừng ở đây, chờ anh/chị:**
+1. Mang 3 câu ở mục 0 đi hỏi khách.
+2. Chọn công nghệ ở mục 2 và duyệt kiến trúc ở mục 3, kèm 3 ADR.
+
+Có kết quả duyệt thì em mới bắt đầu code.
 
 ### Chấm
 
-**Tiêu chí 1: Chọn có backend, lý do có nhắc bảo mật dữ liệu riêng tư.** ĐẠT. Mục 1 chọn có backend. Lý do ghi rõ kết quả xét nghiệm là "dữ liệu sức khoẻ, thuộc dữ liệu cá nhân nhạy cảm", nên máy chủ phải tự kiểm mã và ngày sinh, chặn dò mã và phân quyền nhân viên.
+**Chấm theo từng tiêu chí**
 
-**Tiêu chí 2: Không để dữ liệu kết quả hay khoá bí mật nằm ở frontend.** ĐẠT. Máy chủ đối chiếu mã và ngày sinh, ký token HMAC rồi trả PDF qua `GET /api/lookup/file` kèm `no-store`. Frontend chỉ là SPA tĩnh, không chứa dữ liệu kết quả hay khoá ký.
+1. **Chọn có backend, lý do có nhắc bảo mật dữ liệu riêng tư: ĐẠT.** Mục 1 chọn có backend và lý do thứ hai ghi rõ kết quả xét nghiệm là dữ liệu cá nhân nhạy cảm theo NĐ 13/2023, nên việc kiểm mã và ngày sinh, giới hạn thử sai và giữ file kín phải làm ở máy chủ.
 
-**Tiêu chí 3: Có hạn chế của thiết kế.** ĐẠT. Mục 6 nêu 7 hạn chế cụ thể, gồm xác thực yếu, khoá mã bị lợi dụng, không báo cho bệnh nhân khi có kết quả, một máy chủ, pháp lý và chưa có staging. Mỗi hạn chế có cách xử lý hoặc lý do chấp nhận.
+2. **Không để dữ liệu kết quả hay khoá bí mật nằm ở frontend: ĐẠT.** File PDF nằm trong thư mục kín trên máy chủ. Muốn mở file phải có vé xem do server cấp, vé sống 15 phút và chỉ mở được file của đúng phiếu đó. Phần "Không bao giờ" cấm đưa khoá bí mật vào repo và cấm để file có đường dẫn công khai. Frontend chỉ dùng mock lúc phát triển.
 
-**Tiêu chí 4: Chọn kiến trúc bằng lý do từ chính bài toán, có bảng lợi và hại, không viện dẫn dự án khác.** ĐẠT. Mục 3 lấy lý do từ chính bài toán: khoảng 7 màn hình, 15 API, 1–2 người bảo trì và 200 lượt mỗi ngày. Bảng lợi và hại có 6 dòng, kèm các ngưỡng cụ thể để đổi kiến trúc. Câu trả lời không nhắc chuyện monolith ở dự án nào khác. Bảo mật không được nêu thẳng trong bảng kiến trúc, nhưng có ở dòng rủi ro phần quản trị làm sập tra cứu và ở mục 1, nên vẫn đạt.
+3. **Có hạn chế của thiết kế: ĐẠT.** Mục 7 nêu 5 hạn chế cụ thể: ai cầm phiếu và biết ngày sinh thì xem được, kẻ xấu có thể cố ý khoá mã người khác, một máy là một điểm hỏng, nhân viên có thể tải nhầm file, không có CAPTCHA. Hạn chế nào cũng kèm cách giảm nhẹ hoặc lý do tạm chấp nhận.
 
-Ghi chú ngoài tiêu chí: agent nói rõ bản nháp không do nó viết trong phiên và nó chưa ghi được phần sửa vào file. Cách báo này trung thực, không ảnh hưởng điểm.
+4. **Chọn kiến trúc bằng lý do từ chính bài toán, có bảng lợi và hại, không viện dẫn monolith ở dự án khác: ĐẠT.** Mục 3 có bảng lợi và hại theo 6 tiêu chí, xét cả trước mắt lẫn khi dự án lớn lên, và có điều kiện khi nào nên đổi kiến trúc. ADR-002 lấy lý do từ chính bài toán: 200 lượt/ngày, 1–2 người bảo trì, dữ liệu nhạy cảm, 4 nhóm nghiệp vụ. Câu trả lời không nhắc tới dự án nào khác.
 
 KẾT QUẢ: ĐẠT
 
