@@ -11,7 +11,7 @@ import re,sys
 t=open(sys.argv[1]).read(); out=sys.argv[2]
 for blk in re.split(r'\n## ',t)[1:]:
     n=blk.split('.')[0]
-    open(f'{out}/sit{n}.txt','w').write(re.search(r'\*\*Tình huống:\*\* (.*)',blk).group(1))
+    open(f'{out}/sit{n}.txt','w').write(re.search(r'\*\*Tình huống:\*\* (.*?)\n\*\*Người quản lý làm',blk,re.S).group(1))
     open(f'{out}/crit{n}.txt','w').write(blk.split('**Đạt khi:**')[1].strip())
 PY
 chay() { n=$1; d="$OUT/w$n"; mkdir -p "$d"
