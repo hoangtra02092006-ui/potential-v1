@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 (24/11/2026)
+- Thêm skill `viet-code-va-test`, viết từ câu trả lời thật của người quản lý: trước khi code ghi rõ ý nghĩa nghiệp vụ của từng con số đầu ra (bài học thống kê mét in báo 0 m cho ảnh lồng trong ảnh khác); logic nghiệp vụ có thể test trước, thường code trước rồi test ngay, giao diện code trước; kết quả mong đợi lấy từ yêu cầu, không chép output; code sạch theo cấu trúc thiết kế và cách chia component; quy ước chuẩn chung, tiếng Anh, comment ngắn.
+- Tiền: dự án doanh nghiệp, ngoại tệ dùng số thập phân chính xác (BigDecimal, NUMERIC, decimal.js), không dùng float/double; web đơn giản VND dùng số nguyên đồng; làm tròn có quy tắc, kỳ cuối nhận phần dư.
+- Khi nào hỏi, khi nào làm luôn: chỉ hỏi chỗ mơ hồ đang chặn thẻ, tối đa 3 câu gửi điều phối; chi tiết có mặc định thì ghi giả định và làm luôn.
+- References: mẫu CONSTRAINTS.md, bảng bẫy hay gặp (tối ưu nội bộ làm sai số báo khách, làm tròn, số thực, rỗng, múi giờ, đơn vị đo, Windows, tiếng Việt, giới hạn, quyền).
+- `lam-ro-yeu-cau`: ghi rõ không dùng cho chỗ chưa rõ phát sinh khi đang làm thẻ việc đã duyệt. Chạy lại bộ đề lam-ro-yeu-cau: 5/5.
+- Bộ đề 5 câu, câu 1-2 agent code và chạy test thật. Lượt 1 đạt 2/5, sau 3 lần sửa đạt 5/5. Code mẫu câu 1 ở `evals/ket-qua/viet-code-mau/`.
+
 ## 0.5.0 (24/11/2026)
 - Thêm skill `chia-viec-agent`, viết từ câu trả lời thật của người quản lý: khung dùng chung trước (gồm hợp đồng API, schema, file dùng chung), rồi chia backend và frontend chạy song song, rồi chia tiếp phần độc lập; tối đa 5 agent cùng lúc, mỗi agent không quá 5 file, hai agent không sửa cùng file; người quản lý duyệt bảng chia việc một lần và xem ở mốc chạy được.
 - Nhắm vào nỗi đau thật: một agent code lâu, hiểu sai yêu cầu, sót tiểu tiết. Thẻ việc chép nguyên văn yêu cầu gốc, có tiêu chí xong gồm tiểu tiết và ca test biên; agent ghi "tôi hiểu việc này là…" trước khi code; agent khác review đối chiếu yêu cầu gốc.

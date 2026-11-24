@@ -1,6 +1,6 @@
 ---
 name: lam-ro-yeu-cau
-description: Làm rõ yêu cầu của khách trước khi giao việc lập trình web. Dùng khi nhận một yêu cầu mới hoặc thay đổi (vd "làm trang quản lý đơn hàng", "thêm xuất Excel", "xuất file để in"), trước khi thiết kế hay viết code. Kết quả là phiếu hỏi để người quản lý mang đi hỏi khách, hoặc bản tóm tắt đã đủ rõ để người quản lý duyệt.
+description: Làm rõ yêu cầu của khách trước khi giao việc lập trình web. Dùng khi nhận một yêu cầu mới hoặc thay đổi (vd "làm trang quản lý đơn hàng", "thêm xuất Excel", "xuất file để in"), trước khi thiết kế hay viết code. Kết quả là phiếu hỏi để người quản lý mang đi hỏi khách, hoặc bản tóm tắt đã đủ rõ để người quản lý duyệt. Không dùng cho chỗ chưa rõ phát sinh khi đang làm một thẻ việc đã duyệt; lúc đó dùng skill viet-code-va-test (hỏi điều phối tối đa 3 câu).
 ---
 
 # Làm rõ yêu cầu
