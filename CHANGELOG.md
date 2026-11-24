@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0 (24/11/2026)
+- Thêm skill `phat-hanh`, viết từ câu trả lời của người quản lý: trước khi phát hành kiểm test và build đạt, review không còn lỗi Chặn, đã tăng phiên bản và ghi CHANGELOG, có cách lùi bản; agent chuẩn bị gói phát hành (ghi chú phát hành, các bước deploy, các bước lùi, danh sách kiểm trên bản thật), người quản lý tự bấm deploy. Agent không tự deploy, không tự chạy migration production, không tự lùi bản.
+- Thay đổi cấu trúc dữ liệu chia 2 bước khi production có dữ liệu thật: bản này thêm mới giữ cũ, bản sau mới xoá cũ; dự án chưa có người dùng thật thì đổi một bước được. Production lỗi mức Chặn thì đề xuất lùi trước, sửa sau.
+- References: mẫu gói phát hành `docs/phat-hanh/<phiên bản>.md`.
+- Bộ đề 5 câu, tình huống giả định (người quản lý chưa có lần phát hành lỗi). Lượt 1 đạt 4/5; câu 5 trượt vì gói quá nặng cho dự án nhỏ. Sửa skill (cân gói theo cỡ, tự làm mục làm được), chạy lại câu 5 và câu 1: đạt cả hai. Tổng 5/5.
+
 ## 0.7.0 (24/11/2026)
 - Thêm skill `review-doc-lap`, viết từ câu trả lời thật của người quản lý: reviewer không tham gia làm, là BA khi kiểm nghiệp vụ và senior khi soát code; chỉ ghi lỗi để agent làm sửa, không tự sửa (như người quản lý là chốt chặn, tránh thiên kiến và lẫn vai). Thứ tự soát: nghiệp vụ và chạy thử → logic, ca biên → bảo mật → code, rút gọn → test. Ba mức Chặn / Nên sửa / Góp ý; không thổi phồng, chỉ ghi lỗi có bằng chứng, báo cáo dài theo cỡ thay đổi.
 - Bài học chữ trắng trên giấy trắng: kiểm đầu ra trong đúng điều kiện nơi dùng thật (`references/kiem-dau-ra-that.md`: file in, file cắt, Excel, màn hình, email, API, số liệu).
