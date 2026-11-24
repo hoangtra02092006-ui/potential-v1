@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Chạy bộ đề của một skill: mỗi tình huống một agent mới (có plugin, không thấy đề), một agent khác chấm.
-# Dùng: bash evals/chay-bo-de.sh <ten-skill> <thu-muc-ket-qua>
+# Dùng: bash evals/chay-bo-de.sh <ten-skill> <thu-muc-ket-qua> [số câu...]  (bỏ trống = chạy mọi câu)
 set -u
-SKILL=$1; OUT=$2
+SKILL=$1; OUT=$2; shift 2; CHON="$*"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 PLUGIN="$ROOT/plugins/bo-chuan"
 mkdir -p "$OUT"
@@ -24,5 +24,5 @@ TIÊU CHÍ:
 $(cat "$OUT/crit$n.txt")
 CÂU TRẢ LỜI CỦA AGENT:
 $(cat "$OUT/ans$n.txt")" < /dev/null > "$OUT/grade$n.txt" 2>&1; }
-for f in "$OUT"/sit*.txt; do n=$(basename "$f" .txt); n=${n#sit}; chay "$n" & done; wait
+for f in "$OUT"/sit*.txt; do n=$(basename "$f" .txt); n=${n#sit}; if [ -z "$CHON" ] || [[ " $CHON " == *" $n "* ]]; then chay "$n" & fi; done; wait
 for f in "$OUT"/sit*.txt; do n=$(basename "$f" .txt); n=${n#sit}; echo "Câu $n: $(grep -o 'KẾT QUẢ: *[^ *]*' "$OUT/grade$n.txt" | tail -1)"; done
