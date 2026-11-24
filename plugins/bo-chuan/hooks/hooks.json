@@ -1,0 +1,21 @@
+{
+  "description": "Nền của bộ chuẩn: nạp nguyên tắc chung khi mở phiên; chặn push thẳng lên nhánh chính và lệnh xoá hàng loạt.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "cat \"${CLAUDE_PLUGIN_ROOT}/nen/nguyen-tac.md\"", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/chan-push-main.sh\"", "timeout": 10 },
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/chan-lenh-nguy-hiem.sh\"", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}
