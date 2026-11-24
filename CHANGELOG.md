@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0 (24/11/2026)
+- Thêm skill `chia-viec-agent`, viết từ câu trả lời thật của người quản lý: khung dùng chung trước (gồm hợp đồng API, schema, file dùng chung), rồi chia backend và frontend chạy song song, rồi chia tiếp phần độc lập; tối đa 5 agent cùng lúc, mỗi agent không quá 5 file, hai agent không sửa cùng file; người quản lý duyệt bảng chia việc một lần và xem ở mốc chạy được.
+- Nhắm vào nỗi đau thật: một agent code lâu, hiểu sai yêu cầu, sót tiểu tiết. Thẻ việc chép nguyên văn yêu cầu gốc, có tiêu chí xong gồm tiểu tiết và ca test biên; agent ghi "tôi hiểu việc này là…" trước khi code; agent khác review đối chiếu yêu cầu gốc.
+- References: mẫu thẻ việc, mẫu bảng chia việc, cách chạy song song trong Claude Code (Agent chạy nền, worktree riêng, gom theo thứ tự phụ thuộc). Tham khảo wshobson/agents (agent-teams) và addyosmani/agent-skills (planning-and-task-breakdown), MIT.
+- Bộ đề 5 câu: lượt 1 đạt 2/5, lượt 2 thêm 2 câu, lượt 3 đạt câu cuối. Tổng 5/5. Bảng chia việc mẫu ở `evals/ket-qua/chia-viec-mau/`.
+
 ## 0.4.0 (24/11/2026)
 - Thêm skill `giao-dien`, viết từ câu trả lời thật của người quản lý: phong cách theo mục đích web (quản lý: tối giản mà chỉn chu; marketing: chuyên nghiệp, thu hút, có thể đề xuất 3D và chuyển động), DESIGN.md cho mỗi dự án, thư viện chọn theo dự án, tự chụp màn hình 390px và 1280px rồi soát theo thứ tự màu và chữ → bố cục → nội dung, danh sách chống giao diện "trông AI".
 - Tham khảo: leonxlnx/taste-skill, voltagent/awesome-design-md, vercel-labs/agent-skills, addyosmani/agent-skills, microsoft/playwright-cli.

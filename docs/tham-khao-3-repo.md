@@ -33,3 +33,11 @@
 | abi/screenshot-to-code (công cụ "Image-to-Code" trong video) | Dựng giao diện từ ảnh mẫu. Không cài công cụ (cần khoá API riêng); Claude Code tự đọc ảnh được, nên chỉ lấy cách làm: hình mẫu trước, dựng lại, so cạnh nhau | giao-dien mục 3 |
 
 Không lấy từ taste-skill: bộ công cụ và script riêng (deal, gate, kho ảnh), quy tắc rất chi tiết cho landing page; quá nặng và gắn với cách làm riêng của tác giả.
+
+## Dùng cho skill 4 (chia-viec-agent)
+| Lấy từ | Ý chính | Đã đưa vào |
+|---|---|---|
+| wshobson/agents: agent-teams, parallel-feature-development (MIT) | Mỗi file một chủ; file dùng chung thì một chủ nhận yêu cầu thay đổi; hợp đồng giao tiếp chỉ đọc cho người làm | chia-viec-agent mục 2, chay-song-song.md |
+| addyosmani/agent-skills: planning-and-task-breakdown (MIT) | Sơ đồ phụ thuộc, thẻ việc có tiêu chí xong và lệnh kiểm, cỡ việc theo số file, mốc kiểm | the-viec.md, bang-chia-viec.md |
+
+Không lấy: cách cắt theo tính năng từ đầu đến cuối làm mặc định (người quản lý chọn cắt backend và frontend trước, rồi cắt tiếp trong mỗi bên).
