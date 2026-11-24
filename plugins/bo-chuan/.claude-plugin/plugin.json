@@ -1,6 +1,6 @@
 {
   "name": "bo-chuan",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Bản sao năng lực lập trình web của người quản lý. Bản nền: nạp nguyên tắc chung vào mọi phiên và chặn 2 việc nguy hiểm. Skill được thêm dần, mỗi skill kèm bộ đề kiểm tra.",
   "author": { "name": "noal.drm" },
   "keywords": ["web", "quy-trinh", "chuan"]
