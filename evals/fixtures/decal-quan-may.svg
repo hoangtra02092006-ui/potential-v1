@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80mm" height="80mm" viewBox="0 0 800 800">
+  <circle cx="400" cy="330" r="230" fill="#6B3E26"/>
+  <path d="M300 330 q100 -120 200 0 q-100 120 -200 0z" fill="#E8C9A0"/>
+  <text x="400" y="680" font-family="Arial" font-weight="700" font-size="110" text-anchor="middle" fill="#FFFFFF">QUÁN MÂY</text>
+</svg>

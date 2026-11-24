@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.0 (24/11/2026)
+- Thêm skill `review-doc-lap`, viết từ câu trả lời thật của người quản lý: reviewer không tham gia làm, là BA khi kiểm nghiệp vụ và senior khi soát code; chỉ ghi lỗi để agent làm sửa, không tự sửa (như người quản lý là chốt chặn, tránh thiên kiến và lẫn vai). Thứ tự soát: nghiệp vụ và chạy thử → logic, ca biên → bảo mật → code, rút gọn → test. Ba mức Chặn / Nên sửa / Góp ý; không thổi phồng, chỉ ghi lỗi có bằng chứng, báo cáo dài theo cỡ thay đổi.
+- Bài học chữ trắng trên giấy trắng: kiểm đầu ra trong đúng điều kiện nơi dùng thật (`references/kiem-dau-ra-that.md`: file in, file cắt, Excel, màn hình, email, API, số liệu).
+- Thêm vai trò agent đầu tiên `agents/reviewer.md` (chỉ có công cụ đọc và chạy lệnh).
+- `evals/chay-bo-de.sh`: tình huống được viết nhiều dòng (trước đây chỉ lấy dòng đầu, làm mất khối code).
+- Bộ đề 5 câu, câu 1 dùng file SVG decal có chữ trắng. Lượt 1 đạt 2/5 (3 câu trượt do lỗi cắt đề ở trên), sau 3 lần sửa skill đạt 5/5. Câu 3 sửa tiêu chí cho khớp nguyên tắc "lỗi nên sửa phải sửa trong PR".
+
 ## 0.6.0 (24/11/2026)
 - Thêm skill `viet-code-va-test`, viết từ câu trả lời thật của người quản lý: trước khi code ghi rõ ý nghĩa nghiệp vụ của từng con số đầu ra (bài học thống kê mét in báo 0 m cho ảnh lồng trong ảnh khác); logic nghiệp vụ có thể test trước, thường code trước rồi test ngay, giao diện code trước; kết quả mong đợi lấy từ yêu cầu, không chép output; code sạch theo cấu trúc thiết kế và cách chia component; quy ước chuẩn chung, tiếng Anh, comment ngắn.
 - Tiền: dự án doanh nghiệp, ngoại tệ dùng số thập phân chính xác (BigDecimal, NUMERIC, decimal.js), không dùng float/double; web đơn giản VND dùng số nguyên đồng; làm tròn có quy tắc, kỳ cuối nhận phần dư.

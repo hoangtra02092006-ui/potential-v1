@@ -5,7 +5,7 @@ Mỗi skill có một file `<ten-skill>.md` ở đây. Thư mục này nằm ngo
 ## Một câu trong bộ đề
 ```
 ## <số>. <tên ngắn của tình huống>
-**Tình huống:** đầu vào agent nhận được, viết như việc thật.
+**Tình huống:** đầu vào agent nhận được, viết như việc thật (được nhiều dòng, kể cả khối code).
 **Người quản lý làm:** câu trả lời hoặc quyết định thật của người quản lý.
 **Đạt khi:** 2-4 tiêu chí kiểm được (phải có ..., không được ...).
 ```
