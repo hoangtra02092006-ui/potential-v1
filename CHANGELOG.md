@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 (24/11/2026)
+- Thêm skill `thiet-ke-loi-giai`, viết từ câu trả lời thật của người quản lý: tiêu chí chỉ frontend hay có backend, công nghệ mặc định Java + Vue/Nuxt nhưng đề xuất theo yêu cầu, kiến trúc luôn có bảng lợi và hại (bài học monolith build lâu, khó hiểu cho người mới), bản thiết kế phải có cấu trúc tổng quan, tổng quan giao diện và hạn chế.
+- Bộ đề 5 câu, lượt 1 đạt 5/5. Thêm `evals/chay-bo-de.sh` để chạy bộ đề của bất kỳ skill nào.
+
 ## 0.2.1 (24/11/2026) — skill lam-ro-yeu-cau được duyệt
 - Người quản lý duyệt skill `lam-ro-yeu-cau` và cả 5 câu trong bộ đề (câu 4, 5 hết là suy đoán).
 - Không ghi tên người trong plugin: đổi tên plugin thành `bo-chuan`, kho thành `noal-drm-plugins`, tác giả `noal.drm`; mọi chỗ khác ghi "người quản lý".
