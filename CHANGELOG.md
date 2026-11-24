@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0 (24/11/2026)
+- Thêm skill `khoi-tao-du-an`, viết từ câu trả lời của người quản lý: bộ khung gồm repo và nhánh main, CLAUDE.md (có bảng lệnh đã chạy thử và bản đồ thư mục), CONSTRAINTS.md, DESIGN.md, docs/ theo loại, khung code chạy được với 1 test mẫu, lint, format, README chạy trên Windows, GitHub Actions chạy lint, test, build mỗi PR. Thứ tự: yêu cầu và thiết kế duyệt → khởi tạo → người quản lý xem khung chạy được → chia việc.
+- Từ bài học "cấu trúc lộn xộn khó xem xét": mỗi thư mục một mục đích và có trong bản đồ, không để file lẻ ở gốc, code chia theo chức năng, một tài liệu một bản đang dùng. Dự án có sẵn đang lộn xộn: lập bản đồ hiện trạng trước, sắp lại theo đợt nhỏ mỗi đợt một PR, người quản lý duyệt trước, không xoá file khi chưa kiểm.
+- Bí mật chỉ ở `.env` và secrets của GitHub/hosting; repo chỉ có `.env.example`. Cân khung theo cỡ dự án.
+- References: cấu trúc mẫu (có backend, chỉ frontend), mẫu CLAUDE.md, mẫu CI GitHub Actions.
+- Bộ đề 5 câu (tình huống giả định quanh chuyện thật). Lượt 1 đạt 3/5; sau 2 lần sửa đạt 5/5.
+- Đủ 8 skill theo lộ trình.
+
 ## 0.8.0 (24/11/2026)
 - Thêm skill `phat-hanh`, viết từ câu trả lời của người quản lý: trước khi phát hành kiểm test và build đạt, review không còn lỗi Chặn, đã tăng phiên bản và ghi CHANGELOG, có cách lùi bản; agent chuẩn bị gói phát hành (ghi chú phát hành, các bước deploy, các bước lùi, danh sách kiểm trên bản thật), người quản lý tự bấm deploy. Agent không tự deploy, không tự chạy migration production, không tự lùi bản.
 - Thay đổi cấu trúc dữ liệu chia 2 bước khi production có dữ liệu thật: bản này thêm mới giữ cũ, bản sau mới xoá cũ; dự án chưa có người dùng thật thì đổi một bước được. Production lỗi mức Chặn thì đề xuất lùi trước, sửa sau.
