@@ -29,5 +29,7 @@
 | leonxlnx/taste-skill (MIT) | Loại web quyết định phong cách; ảnh thật dẫn dắt; 3D và hiệu ứng chỉ hợp sản phẩm công nghệ; chuyển động có mục đích (xuất hiện đầu trang, 1-2 khoảnh khắc, hover); danh sách câu chữ "trông AI" | giao-dien |
 | voltagent/awesome-design-md (MIT) | Mỗi dự án có DESIGN.md ghi token và Nên / Không nên; kho phân tích phong cách của trang thật để tham chiếu | giao-dien |
 | microsoft/playwright-cli (Apache 2.0) | Agent tự mở trang, chụp ảnh, tự xem và sửa | giao-dien |
+| vercel: web-design-guidelines (MIT), bản đầy đủ | Danh sách kiểm truy cập, focus, form, chuyển động, chữ, ảnh, chạm; dịch và rút gọn | giao-dien (`danh-sach-kiem-giao-dien.md`) |
+| abi/screenshot-to-code (công cụ "Image-to-Code" trong video) | Dựng giao diện từ ảnh mẫu. Không cài công cụ (cần khoá API riêng); Claude Code tự đọc ảnh được, nên chỉ lấy cách làm: hình mẫu trước, dựng lại, so cạnh nhau | giao-dien mục 3 |
 
 Không lấy từ taste-skill: bộ công cụ và script riêng (deal, gate, kho ảnh), quy tắc rất chi tiết cho landing page; quá nặng và gắn với cách làm riêng của tác giả.

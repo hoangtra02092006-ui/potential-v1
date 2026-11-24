@@ -15,7 +15,7 @@ Những dấu hiệu khiến giao diện trông như AI làm. Gặp là sửa.
 | Padding to và đều khắp nơi | Mất thứ bậc, phí màn hình | Thang khoảng cách: gần cho thứ liên quan, xa cho thứ khác nhóm |
 | Mọi chữ căn giữa | Khó đọc đoạn dài | Căn trái cho nội dung đọc; căn giữa chỉ cho dòng ngắn |
 | Nhiều màu nhấn cùng lúc | Rối | Một màu nhấn, dùng cho hành động chính |
-| Mọi thứ trôi lên, mờ dần khi cuộn | Chậm, phiền | Chuyển động theo mục 6 của skill |
+| Mọi thứ trôi lên, mờ dần khi cuộn | Chậm, phiền | Chuyển động theo mục 7 của skill |
 
 ## Câu chữ
 - Câu sáo: "Khai phá sức mạnh", "Trong thời đại số hôm nay", "Giải pháp toàn diện", "Unlock the power of", "Seamless".

@@ -5,6 +5,8 @@
 - Tham khảo: leonxlnx/taste-skill, voltagent/awesome-design-md, vercel-labs/agent-skills, addyosmani/agent-skills, microsoft/playwright-cli.
 - `evals/chay-bo-de.sh`: agent làm bài được chạy lệnh (để dựng và chụp màn hình); người chấm tự mở file và ảnh.
 - Bộ đề 5 câu, lượt 1 đạt 5/5; câu 5 dựng thật trang demo, xem ở `evals/ket-qua/giao-dien-demo/`.
+- Bổ sung sau video người quản lý gửi (5 công cụ thiết kế cho Claude Code): bước "hình mẫu trước, code sau" (lấy 1-3 hình mẫu, đọc như người thiết kế, dựng lại bằng thương hiệu của mình, ghép cạnh nhau để so), `references/trang-marketing.md` (nền một màu lấy từ sản phẩm, sản phẩm to nghiêng lơ lửng, chữ khổng lồ xếp lớp, thiếu ảnh thì báo ngay), `references/danh-sach-kiem-giao-dien.md` (danh sách kiểm Vercel dịch và rút gọn), giữ dấu tiếng Việt ở chữ cỡ lớn.
+- Bộ đề thêm câu 6 (dựng theo hình mẫu) và câu 7 (marketing chưa có hình mẫu và ảnh). Lượt 1 đạt 4/7; câu 6 trượt vì chữ nền mất dấu nặng, câu 1 thiếu thang khoảng cách. Sửa skill, chạy lại 3 câu trượt: đạt cả 3. Tổng 7/7.
 
 ## 0.3.0 (24/11/2026)
 - Thêm skill `thiet-ke-loi-giai`, viết từ câu trả lời thật của người quản lý: tiêu chí chỉ frontend hay có backend, công nghệ mặc định Java + Vue/Nuxt nhưng đề xuất theo yêu cầu, kiến trúc luôn có bảng lợi và hại (bài học monolith build lâu, khó hiểu cho người mới), bản thiết kế phải có cấu trúc tổng quan, tổng quan giao diện và hạn chế.

@@ -18,7 +18,15 @@ const { chromium } = require('playwright');
 Chạy: `node chup.js http://localhost:5173/<trang>`.
 
 - Chụp đủ trạng thái chính: có dữ liệu, rỗng, lỗi, đang mở hộp thoại.
-- Xem ảnh bằng công cụ đọc ảnh, soát theo mục 7 của skill.
+- Xem ảnh bằng công cụ đọc ảnh, soát theo mục 8 của skill.
 - Lưu ảnh ở `docs/anh-giao-dien/<yyyymmdd>/` để người quản lý xem khi duyệt.
 
 Nguồn tham khảo: microsoft/playwright-cli (Apache 2.0).
+
+## Ghép bản dựng cạnh hình mẫu
+Chụp bản dựng đúng khung của hình mẫu (vd hình mẫu là màn đầu trang máy tính thì chụp 1280x800, không chụp toàn trang), rồi ghép:
+```bash
+ffmpeg -y -i hinh-mau.png -i shots/desktop-dau-trang.png \
+  -filter_complex "[0]scale=-1:800[a];[1]scale=-1:800[b];[a][b]hstack" shots/so-hinh-mau.png
+```
+Không có ffmpeg thì dựng một trang HTML hai cột đặt hai ảnh rồi chụp bằng Playwright. Xem ảnh ghép, ghi từng chỗ lệch rồi sửa.

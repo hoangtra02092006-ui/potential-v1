@@ -45,3 +45,21 @@ Dựa trên câu trả lời thật của người quản lý (24/11): phong cá
 - Có ảnh chụp ở khoảng 390px và khoảng 1280px trong thư mục (người chấm tự mở xem).
 - Xem ảnh: màu và chữ hài hoà, nhất quán; bố cục gọn, thẳng lề; bảng số dễ đọc; không có dấu hiệu trông AI (gradient tím, emoji làm icon, bo tròn và bóng quá tay, câu sáo).
 - Có bảng tự soát theo thứ tự màu và chữ → bố cục → nội dung, và trình như bản chờ duyệt.
+
+## 6. Dựng theo hình mẫu
+**Tình huống:** Người quản lý muốn trang giới thiệu một mẫu tai nghe chụp tai mới tên "Âm Lặng" (thương hiệu Việt, giá 2.490.000đ, chống ồn, pin 40 giờ, 3 màu: đen, kem, xanh rêu) và gửi một hình mẫu thích ở `/home/user/potential-v1/evals/fixtures/hinh-mau-giay.png` (màn đầu trang của một trang giày tên LỐI Bước), nói "làm theo phong cách này". Chưa có ảnh tai nghe; được dùng hình khối dựng bằng CSS hoặc Three.js đơn giản làm chỗ sản phẩm, ghi rõ là tạm. Làm màn đầu trang trong thư mục hiện tại bằng một file HTML/CSS/JS tĩnh. Playwright đã cài sẵn: require('playwright') chạy được. Tự chụp và tự soát rồi mới trình.
+**Người quản lý làm:** Giao diện marketing theo đúng tinh thần hình mẫu, như người chuyên UI làm; không chép thương hiệu của hình mẫu.
+**Đạt khi:**
+- Có DESIGN.md với mục học từ hình mẫu, nêu cụ thể bố cục, tỷ lệ chữ, màu, lớp trước sau của hình mẫu.
+- Có ảnh ghép bản dựng cạnh hình mẫu trong thư mục (người chấm tự mở xem), và câu trả lời liệt kê chỗ còn lệch.
+- Xem ảnh: bố cục và cách phối giống tinh thần hình mẫu (sản phẩm giữa, chữ rất lớn phía sau, thông tin chia hai bên, nền một màu), không có chữ "LỐI" hay "Bước" của hình mẫu.
+- Nói rõ chỗ sản phẩm đang là hình tạm và cần ảnh hoặc mô hình thật.
+
+## 7. Trang marketing chưa có hình mẫu và ảnh
+**Tình huống:** Thiết kế lời giải đã duyệt: landing page giới thiệu một dòng nước hoa mới của một thương hiệu Việt, 3 mùi hương, có nút đặt mua. Khách chưa gửi ảnh sản phẩm, người quản lý cũng chưa gửi hình mẫu nào. Hãy xử lý bước tiếp theo về giao diện (chưa cần dựng).
+**Người quản lý làm:** Không muốn nhận một trang đầy khung ảnh xám. Muốn được hỏi hình mẫu và được báo sớm chuyện thiếu ảnh, kèm cách khác.
+**Đạt khi:**
+- Xin người quản lý hình mẫu, hoặc tự đề xuất 2-3 trang thật cụ thể để chọn làm hình mẫu.
+- Báo ngay chuyện thiếu ảnh sản phẩm là việc chặn, đưa cách khác kèm cái giá (vd chụp mới, ảnh tạo bằng AI cần duyệt, mô hình 3D).
+- Không đề xuất dựng trang với khung ảnh xám để thay sau.
+- Câu hỏi cho người quản lý không quá 3 câu, mỗi câu kèm đề xuất.
