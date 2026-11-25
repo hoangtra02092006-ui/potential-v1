@@ -1,62 +1,41 @@
 # Changelog
 
+Bài học cụ thể và kết quả bộ đề của từng lần sửa. Bảng điểm hiện tại ở `evals/ket-qua.md`.
+
+## 0.10.0 (25/11/2026)
+Sửa `giao-dien` sau lần thử trên web thời trang (vòng 1 bị nhận xét "như album ảnh").
+- Loại web **bán hàng** có khung khối riêng (`references/trang-ban-hang.md`); luật landing "mỗi khối một màn hình" chỉ cho landing.
+- Bảng `references/chon-hinh-mau.md`: loại web → bản nào trong awesome-design-md → lấy phần nào.
+- Bắt buộc ảnh thiết kế trước khi code màn hình chính, so cạnh sau mỗi vòng. Chưa có hình mẫu: hỏi, đồng thời dựng 2-3 hướng thật.
+- Thêm 4 nét giao diện AI; thử phông với chữ hoa hai dấu; ảnh sản phẩm cùng nền; lưới cố định dùng `minmax(0,1fr)`; trước khi đưa duyệt chạy copy-lint, luật Vercel, đo tràn bằng code.
+- Bộ đề thêm câu 8, 9: 4/4 sau một lần sửa (câu 7 trượt vì agent bỏ bước hỏi hình mẫu).
+- `chay-bo-de.sh`: agent làm bài không dùng bộ nhớ chung (đã từng ghi dự án giả vào đó).
+- Báo cáo soát giao diện giữ thứ tự màu chữ → bố cục → nội dung (câu 4 trượt khi chạy lại cả bộ, đã sửa).
+- Dọn repo: bỏ bài làm và bài chấm đầy đủ trong `evals/ket-qua/` (thay bằng bảng `evals/ket-qua.md`), bỏ `docs/tham-khao-3-repo.md` (đã đưa hết vào skill), rút gọn CHANGELOG và README, đồng bộ phiên bản ở marketplace.json; `thiet-ke-loi-giai` bỏ đoạn lặp nguyên tắc chung. Chạy lại cả bộ giao-dien 9/9 và thiet-ke-loi-giai 5/5.
+
 ## 0.9.0 (24/11/2026)
-- Thêm skill `khoi-tao-du-an`, viết từ câu trả lời của người quản lý: bộ khung gồm repo và nhánh main, CLAUDE.md (có bảng lệnh đã chạy thử và bản đồ thư mục), CONSTRAINTS.md, DESIGN.md, docs/ theo loại, khung code chạy được với 1 test mẫu, lint, format, README chạy trên Windows, GitHub Actions chạy lint, test, build mỗi PR. Thứ tự: yêu cầu và thiết kế duyệt → khởi tạo → người quản lý xem khung chạy được → chia việc.
-- Từ bài học "cấu trúc lộn xộn khó xem xét": mỗi thư mục một mục đích và có trong bản đồ, không để file lẻ ở gốc, code chia theo chức năng, một tài liệu một bản đang dùng. Dự án có sẵn đang lộn xộn: lập bản đồ hiện trạng trước, sắp lại theo đợt nhỏ mỗi đợt một PR, người quản lý duyệt trước, không xoá file khi chưa kiểm.
-- Bí mật chỉ ở `.env` và secrets của GitHub/hosting; repo chỉ có `.env.example`. Cân khung theo cỡ dự án.
-- References: cấu trúc mẫu (có backend, chỉ frontend), mẫu CLAUDE.md, mẫu CI GitHub Actions.
-- Bộ đề 5 câu (tình huống giả định quanh chuyện thật). Lượt 1 đạt 3/5; sau 2 lần sửa đạt 5/5.
-- Đủ 8 skill theo lộ trình.
+- Skill `khoi-tao-du-an`: khung chuẩn (CLAUDE.md có lệnh đã chạy thử và bản đồ thư mục, CONSTRAINTS.md, DESIGN.md, docs/, test mẫu, lint, README Windows, CI). Bài học "cấu trúc lộn xộn khó xem xét": mỗi thư mục một mục đích, sắp lại dự án cũ theo đợt nhỏ có duyệt. Bộ đề 3/5 → 5/5.
 
 ## 0.8.0 (24/11/2026)
-- Thêm skill `phat-hanh`, viết từ câu trả lời của người quản lý: trước khi phát hành kiểm test và build đạt, review không còn lỗi Chặn, đã tăng phiên bản và ghi CHANGELOG, có cách lùi bản; agent chuẩn bị gói phát hành (ghi chú phát hành, các bước deploy, các bước lùi, danh sách kiểm trên bản thật), người quản lý tự bấm deploy. Agent không tự deploy, không tự chạy migration production, không tự lùi bản.
-- Thay đổi cấu trúc dữ liệu chia 2 bước khi production có dữ liệu thật: bản này thêm mới giữ cũ, bản sau mới xoá cũ; dự án chưa có người dùng thật thì đổi một bước được. Production lỗi mức Chặn thì đề xuất lùi trước, sửa sau.
-- References: mẫu gói phát hành `docs/phat-hanh/<phiên bản>.md`.
-- Bộ đề 5 câu, tình huống giả định (người quản lý chưa có lần phát hành lỗi). Lượt 1 đạt 4/5; câu 5 trượt vì gói quá nặng cho dự án nhỏ. Sửa skill (cân gói theo cỡ, tự làm mục làm được), chạy lại câu 5 và câu 1: đạt cả hai. Tổng 5/5.
+- Skill `phat-hanh`: kiểm 4 mục trước deploy, agent chuẩn bị gói, người quản lý bấm deploy; đổi dữ liệu 2 bước khi có dữ liệu thật; lỗi Chặn trên production thì lùi trước, sửa sau. Bộ đề giả định 4/5 → 5/5 (gói quá nặng cho dự án nhỏ).
 
 ## 0.7.0 (24/11/2026)
-- Thêm skill `review-doc-lap`, viết từ câu trả lời thật của người quản lý: reviewer không tham gia làm, là BA khi kiểm nghiệp vụ và senior khi soát code; chỉ ghi lỗi để agent làm sửa, không tự sửa (như người quản lý là chốt chặn, tránh thiên kiến và lẫn vai). Thứ tự soát: nghiệp vụ và chạy thử → logic, ca biên → bảo mật → code, rút gọn → test. Ba mức Chặn / Nên sửa / Góp ý; không thổi phồng, chỉ ghi lỗi có bằng chứng, báo cáo dài theo cỡ thay đổi.
-- Bài học chữ trắng trên giấy trắng: kiểm đầu ra trong đúng điều kiện nơi dùng thật (`references/kiem-dau-ra-that.md`: file in, file cắt, Excel, màn hình, email, API, số liệu).
-- Thêm vai trò agent đầu tiên `agents/reviewer.md` (chỉ có công cụ đọc và chạy lệnh).
-- `evals/chay-bo-de.sh`: tình huống được viết nhiều dòng (trước đây chỉ lấy dòng đầu, làm mất khối code).
-- Bộ đề 5 câu, câu 1 dùng file SVG decal có chữ trắng. Lượt 1 đạt 2/5 (3 câu trượt do lỗi cắt đề ở trên), sau 3 lần sửa skill đạt 5/5. Câu 3 sửa tiêu chí cho khớp nguyên tắc "lỗi nên sửa phải sửa trong PR".
+- Skill `review-doc-lap` và agent `reviewer`: BA khi kiểm nghiệp vụ, senior khi soát code, chỉ báo lỗi không tự sửa; ba mức Chặn / Nên sửa / Góp ý, không thổi phồng. Bài học chữ trắng trên giấy trắng: kiểm đầu ra ở điều kiện dùng thật. Bộ đề 2/5 → 5/5 (một phần do lỗi cắt đề nhiều dòng của `chay-bo-de.sh`, đã sửa).
 
 ## 0.6.0 (24/11/2026)
-- Thêm skill `viet-code-va-test`, viết từ câu trả lời thật của người quản lý: trước khi code ghi rõ ý nghĩa nghiệp vụ của từng con số đầu ra (bài học thống kê mét in báo 0 m cho ảnh lồng trong ảnh khác); logic nghiệp vụ có thể test trước, thường code trước rồi test ngay, giao diện code trước; kết quả mong đợi lấy từ yêu cầu, không chép output; code sạch theo cấu trúc thiết kế và cách chia component; quy ước chuẩn chung, tiếng Anh, comment ngắn.
-- Tiền: dự án doanh nghiệp, ngoại tệ dùng số thập phân chính xác (BigDecimal, NUMERIC, decimal.js), không dùng float/double; web đơn giản VND dùng số nguyên đồng; làm tròn có quy tắc, kỳ cuối nhận phần dư.
-- Khi nào hỏi, khi nào làm luôn: chỉ hỏi chỗ mơ hồ đang chặn thẻ, tối đa 3 câu gửi điều phối; chi tiết có mặc định thì ghi giả định và làm luôn.
-- References: mẫu CONSTRAINTS.md, bảng bẫy hay gặp (tối ưu nội bộ làm sai số báo khách, làm tròn, số thực, rỗng, múi giờ, đơn vị đo, Windows, tiếng Việt, giới hạn, quyền).
-- `lam-ro-yeu-cau`: ghi rõ không dùng cho chỗ chưa rõ phát sinh khi đang làm thẻ việc đã duyệt. Chạy lại bộ đề lam-ro-yeu-cau: 5/5.
-- Bộ đề 5 câu, câu 1-2 agent code và chạy test thật. Lượt 1 đạt 2/5, sau 3 lần sửa đạt 5/5. Code mẫu câu 1 ở `evals/ket-qua/viet-code-mau/`.
+- Skill `viet-code-va-test`: nghĩa nghiệp vụ của từng con số (bài học ảnh lồng báo 0 m); kết quả mong đợi lấy từ yêu cầu; tiền doanh nghiệp, ngoại tệ dùng decimal chính xác, web đơn giản số nguyên đồng; chỉ hỏi chỗ mơ hồ đang chặn. Bộ đề 2/5 → 5/5.
 
 ## 0.5.0 (24/11/2026)
-- Thêm skill `chia-viec-agent`, viết từ câu trả lời thật của người quản lý: khung dùng chung trước (gồm hợp đồng API, schema, file dùng chung), rồi chia backend và frontend chạy song song, rồi chia tiếp phần độc lập; tối đa 5 agent cùng lúc, mỗi agent không quá 5 file, hai agent không sửa cùng file; người quản lý duyệt bảng chia việc một lần và xem ở mốc chạy được.
-- Nhắm vào nỗi đau thật: một agent code lâu, hiểu sai yêu cầu, sót tiểu tiết. Thẻ việc chép nguyên văn yêu cầu gốc, có tiêu chí xong gồm tiểu tiết và ca test biên; agent ghi "tôi hiểu việc này là…" trước khi code; agent khác review đối chiếu yêu cầu gốc.
-- References: mẫu thẻ việc, mẫu bảng chia việc, cách chạy song song trong Claude Code (Agent chạy nền, worktree riêng, gom theo thứ tự phụ thuộc). Tham khảo wshobson/agents (agent-teams) và addyosmani/agent-skills (planning-and-task-breakdown), MIT.
-- Bộ đề 5 câu: lượt 1 đạt 2/5, lượt 2 thêm 2 câu, lượt 3 đạt câu cuối. Tổng 5/5. Bảng chia việc mẫu ở `evals/ket-qua/chia-viec-mau/`.
+- Skill `chia-viec-agent`: khung chung trước, rồi backend và frontend song song; tối đa 5 agent, 5 file mỗi agent, không sửa chung file; thẻ việc chép nguyên văn yêu cầu, có tiểu tiết và ca biên. Bộ đề 2/5 → 5/5.
 
 ## 0.4.0 (24/11/2026)
-- Thêm skill `giao-dien`, viết từ câu trả lời thật của người quản lý: phong cách theo mục đích web (quản lý: tối giản mà chỉn chu; marketing: chuyên nghiệp, thu hút, có thể đề xuất 3D và chuyển động), DESIGN.md cho mỗi dự án, thư viện chọn theo dự án, tự chụp màn hình 390px và 1280px rồi soát theo thứ tự màu và chữ → bố cục → nội dung, danh sách chống giao diện "trông AI".
-- Tham khảo: leonxlnx/taste-skill, voltagent/awesome-design-md, vercel-labs/agent-skills, addyosmani/agent-skills, microsoft/playwright-cli.
-- `evals/chay-bo-de.sh`: agent làm bài được chạy lệnh (để dựng và chụp màn hình); người chấm tự mở file và ảnh.
-- Bộ đề 5 câu, lượt 1 đạt 5/5; câu 5 dựng thật trang demo, xem ở `evals/ket-qua/giao-dien-demo/`.
-- Bổ sung sau video người quản lý gửi (5 công cụ thiết kế cho Claude Code): bước "hình mẫu trước, code sau" (lấy 1-3 hình mẫu, đọc như người thiết kế, dựng lại bằng thương hiệu của mình, ghép cạnh nhau để so), `references/trang-marketing.md` (nền một màu lấy từ sản phẩm, sản phẩm to nghiêng lơ lửng, chữ khổng lồ xếp lớp, thiếu ảnh thì báo ngay), `references/danh-sach-kiem-giao-dien.md` (danh sách kiểm Vercel dịch và rút gọn), giữ dấu tiếng Việt ở chữ cỡ lớn.
-- Bộ đề thêm câu 6 (dựng theo hình mẫu) và câu 7 (marketing chưa có hình mẫu và ảnh). Lượt 1 đạt 4/7; câu 6 trượt vì chữ nền mất dấu nặng, câu 1 thiếu thang khoảng cách. Sửa skill, chạy lại 3 câu trượt: đạt cả 3. Tổng 7/7.
+- Skill `giao-dien`: phong cách theo loại web, DESIGN.md, hình mẫu trước code, tự chụp 390/1280 và soát theo thứ tự màu chữ → bố cục → nội dung, danh sách chống giao diện AI. Tham khảo taste-skill, awesome-design-md, vercel-labs, addyosmani, playwright-cli. Bộ đề 4/7 → 7/7.
 
 ## 0.3.0 (24/11/2026)
-- Thêm skill `thiet-ke-loi-giai`, viết từ câu trả lời thật của người quản lý: tiêu chí chỉ frontend hay có backend, công nghệ mặc định Java + Vue/Nuxt nhưng đề xuất theo yêu cầu, kiến trúc luôn có bảng lợi và hại (bài học monolith build lâu, khó hiểu cho người mới), bản thiết kế phải có cấu trúc tổng quan, tổng quan giao diện và hạn chế.
-- Theo góp ý của người quản lý: agent chỉ đề xuất, người quản lý quyết vấn đề nhạy cảm; thiết kế cân theo cỡ việc (web đơn giản xong trong vài giờ), luôn có ước lượng thời gian và cách chia agent; kiến trúc không thiên về kiểu nào.
-- Thêm phần tham khảo từ 3 repo (addyosmani/agent-skills, wshobson/agents): kiểu kiến trúc, bản đồ module, sơ đồ tổng quan 2 tầng, hợp đồng API, ADR. Tổng hợp ở `docs/tham-khao-3-repo.md`.
-- Bộ đề 5 câu, lần chạy cuối đạt 5/5. Thêm `evals/chay-bo-de.sh` (chạy cả bộ hoặc vài câu).
+- Skill `thiet-ke-loi-giai`: khi nào cần backend, công nghệ mặc định Java + Vue/Nuxt nhưng đề xuất theo yêu cầu, kiến trúc luôn có lợi và hại, thiết kế cân theo cỡ việc. Thêm `evals/chay-bo-de.sh`. Bộ đề 5/5.
 
-## 0.2.1 (24/11/2026) — skill lam-ro-yeu-cau được duyệt
-- Người quản lý duyệt skill `lam-ro-yeu-cau` và cả 5 câu trong bộ đề (câu 4, 5 hết là suy đoán).
-- Không ghi tên người trong plugin: đổi tên plugin thành `bo-chuan`, kho thành `noal-drm-plugins`, tác giả `noal.drm`; mọi chỗ khác ghi "người quản lý".
-
-## 0.2.0 (24/11/2026)
-- Thêm skill `lam-ro-yeu-cau` cho agent quản lý, viết từ câu trả lời thật của người quản lý: 4 nhóm câu hỏi (ngành, thông tin, nghiệp vụ, đầu ra), thông số chuyên ngành phải đề xuất và chờ khách chốt, tiêu chí "đủ rõ".
-- Bộ đề 5 câu ở `evals/lam-ro-yeu-cau.md`. Lượt 1 đạt 3/5 (agent hỏi quá nhiều), sửa skill, lượt 2 đạt 5/5. Kết quả ở `evals/ket-qua/`.
+## 0.2.0 - 0.2.1 (24/11/2026)
+- Skill `lam-ro-yeu-cau`: 4 nhóm câu hỏi, thông số chuyên ngành đề xuất rồi chờ khách chốt, tiêu chí "đủ rõ". Bộ đề 3/5 → 5/5. Không ghi tên người trong plugin.
 
 ## 0.1.0 (24/11/2026)
-- Dựng lại từ đầu thành bản nền: nguyên tắc chung nạp tự động khi mở phiên (hook SessionStart), 2 luật cứng, khung bộ đề kiểm tra. Chưa có skill.
-- Lý do: bản 0.7.1 nặng quy trình, mỏng cách phán đoán, không có cách kiểm agent đã giống người quản lý chưa.
+- Bản nền: nguyên tắc chung nạp bằng hook SessionStart, 2 luật cứng, khung bộ đề.

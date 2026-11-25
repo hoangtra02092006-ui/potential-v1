@@ -15,4 +15,6 @@ Mỗi skill có một file `<ten-skill>.md` ở đây. Thư mục này nằm ngo
 2. Viết skill từ chính các tình huống đó.
 3. Cho agent mới (không thấy bộ đề) làm từng tình huống, chấm theo "Đạt khi".
 4. Câu nào trượt thì sửa skill, chạy lại. Không sửa bộ đề cho dễ đạt.
-5. Người quản lý đọc kết quả và duyệt. Tăng phiên bản, ghi CHANGELOG.
+5. Người quản lý đọc kết quả và duyệt. Tăng phiên bản, ghi CHANGELOG, cập nhật bảng `ket-qua.md`.
+
+Kết quả chạy (bài làm, bài chấm) ghi ra thư mục tạm ngoài repo, không commit. Agent làm bài và agent chấm không được dùng bộ nhớ chung của dự án.

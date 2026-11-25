@@ -1,7 +1,13 @@
 {
   "name": "bo-chuan",
-  "version": "0.9.0",
-  "description": "Bản sao năng lực lập trình web của người quản lý. Bản nền: nạp nguyên tắc chung vào mọi phiên và chặn 2 việc nguy hiểm. Skill được thêm dần, mỗi skill kèm bộ đề kiểm tra.",
-  "author": { "name": "noal.drm" },
-  "keywords": ["web", "quy-trinh", "chuan"]
+  "version": "0.10.0",
+  "description": "Bản sao năng lực lập trình web của người quản lý: nguyên tắc chung nạp vào mọi phiên, 2 luật cứng, 8 skill từ làm rõ yêu cầu đến phát hành, agent reviewer. Mỗi skill có bộ đề kiểm tra.",
+  "author": {
+    "name": "noal.drm"
+  },
+  "keywords": [
+    "web",
+    "quy-trinh",
+    "chuan"
+  ]
 }

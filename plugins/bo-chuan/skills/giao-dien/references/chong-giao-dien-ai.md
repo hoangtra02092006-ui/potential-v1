@@ -15,6 +15,10 @@ Những dấu hiệu khiến giao diện trông như AI làm. Gặp là sửa.
 | Padding to và đều khắp nơi | Mất thứ bậc, phí màn hình | Thang khoảng cách: gần cho thứ liên quan, xa cho thứ khác nhóm |
 | Mọi chữ căn giữa | Khó đọc đoạn dài | Căn trái cho nội dung đọc; căn giữa chỉ cho dòng ngắn |
 | Nhiều màu nhấn cùng lúc | Rối | Một màu nhấn, dùng cho hành động chính |
+| Nút viên thuốc (bo tròn hết) với chữ hoa đứng, giãn chữ | Nét mẫu của AI, ai cũng nhận ra | Nút chữ nhật bo nhẹ theo token, chữ thường |
+| Hàng icon + vạch dọc ngăn cách (dịch vụ, cam kết) | Khuôn có sẵn, không nói gì cụ thể | Vạch kẻ trên, chữ cụ thể, một link hành động |
+| Dải số liệu to (499K / 30 / 15:00) | Trang trí bằng số, người xem không hiểu ngay | Câu thông tin đầy đủ ("Miễn phí giao từ 499.000đ") ở chỗ cần |
+| Ảnh sản phẩm khác nền, khác góc trong cùng lưới | Lộ ảnh ghép, web trông giả | Một nền, một góc, một ánh sáng cho mọi ảnh sản phẩm |
 | Mọi thứ trôi lên, mờ dần khi cuộn | Chậm, phiền | Chuyển động theo mục 7 của skill |
 
 ## Câu chữ
