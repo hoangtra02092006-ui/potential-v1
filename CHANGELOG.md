@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.10.0 (25/11/2026)
+Sửa skill `giao-dien` từ lần thử plugin trên dự án thật (web thời trang, 25/11). Người quản lý nhận xét vòng 1 "như album ảnh".
+- Thêm loại web **bán hàng** với khung khối bắt buộc riêng (`references/trang-ban-hang.md`): thẻ sản phẩm đủ thông tin, bộ lọc, chi tiết sản phẩm, giỏ hàng. Luật landing của taste-skill (mỗi khối một màn hình) chỉ dùng cho landing và ô chiến dịch.
+- Thêm bảng `references/chon-hinh-mau.md`: loại web → bản nào trong awesome-design-md → lấy phần nào (bán hàng: Nike cho thẻ và lưới, Airbnb cho lọc, Apple cho chi tiết). Ghi rõ Uniqlo, Muji không có trong kho và chặn bot.
+- Bắt buộc ảnh thiết kế trước khi code màn hình chính và so cạnh sau mỗi vòng sửa (cách của image-to-code). Chưa có hình mẫu: vẫn hỏi, đồng thời dựng 2-3 hướng thật để chọn bằng mắt.
+- Chống giao diện AI thêm: nút viên thuốc chữ hoa, hàng icon vạch dọc, dải số liệu to, ảnh sản phẩm khác nền.
+- Phông tiếng Việt: thử chữ hoa hai dấu (Ố Ầ Ứ Ặ) ở cỡ lớn trước khi chọn (Anton lỗi). Ảnh sản phẩm cùng nền; lưới chiều cao cố định dùng `minmax(0,1fr)`.
+- Trước khi đưa duyệt: chạy copy-lint.mjs của taste-skill, đi đủ luật Vercel, đo khối tràn đè bằng code.
+- Bộ đề giao-dien thêm câu 8, 9. Chạy câu 1, 7, 8, 9: lượt 1 đạt 3/4, sửa xong đạt 4/4.
+- `evals/chay-bo-de.sh`: agent làm bài và agent chấm không còn đọc, ghi bộ nhớ chung của dự án.
+
 ## 0.9.0 (24/11/2026)
 - Thêm skill `khoi-tao-du-an`, viết từ câu trả lời của người quản lý: bộ khung gồm repo và nhánh main, CLAUDE.md (có bảng lệnh đã chạy thử và bản đồ thư mục), CONSTRAINTS.md, DESIGN.md, docs/ theo loại, khung code chạy được với 1 test mẫu, lint, format, README chạy trên Windows, GitHub Actions chạy lint, test, build mỗi PR. Thứ tự: yêu cầu và thiết kế duyệt → khởi tạo → người quản lý xem khung chạy được → chia việc.
 - Từ bài học "cấu trúc lộn xộn khó xem xét": mỗi thư mục một mục đích và có trong bản đồ, không để file lẻ ở gốc, code chia theo chức năng, một tài liệu một bản đang dùng. Dự án có sẵn đang lộn xộn: lập bản đồ hiện trạng trước, sắp lại theo đợt nhỏ mỗi đợt một PR, người quản lý duyệt trước, không xoá file khi chưa kiểm.

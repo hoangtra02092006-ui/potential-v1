@@ -14,6 +14,8 @@ for blk in re.split(r'\n## ',t)[1:]:
     open(f'{out}/sit{n}.txt','w').write(re.search(r'\*\*Tình huống:\*\* (.*?)\n\*\*Người quản lý làm',blk,re.S).group(1))
     open(f'{out}/crit{n}.txt','w').write(blk.split('**Đạt khi:**')[1].strip())
 PY
+# Agent làm bài và agent chấm không được đọc, ghi bộ nhớ chung của dự án (tình huống giả sẽ lẫn vào bộ nhớ thật).
+unset CLAUDE_COWORK_MEMORY_PATH_OVERRIDE CLAUDE_MEMORY_STORES
 chay() { n=$1; d="$OUT/w$n"; mkdir -p "$d"
   (cd "$d" && timeout 1200 claude --plugin-dir "$PLUGIN" -p "Bạn là agent quản lý các dự án web. Người quản lý chuyển cho bạn: $(cat "$OUT/sit$n.txt")
 Hãy xử lý bước tiếp theo. Trả lời đầy đủ nội dung bạn tạo ra ngay trong câu trả lời." \
