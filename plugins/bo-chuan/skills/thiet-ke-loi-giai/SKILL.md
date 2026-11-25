@@ -39,9 +39,7 @@ Vì vậy:
 ## 5. Chọn phương án
 **Agent chỉ đề xuất, người quản lý quyết.** Vấn đề nhạy cảm (công nghệ, kiến trúc, bảo mật, chi phí, dữ liệu khách) luôn để người quản lý chọn. Trình đề xuất kèm lý do, không viết như thể đã chốt.
 
-Chấm theo thứ tự ưu tiên: thực dụng (đúng yêu cầu khách) → tối giản → dễ dùng → dễ mở rộng và bảo trì → dễ nhìn.
-
-Chỉ đưa 2 phương án khi có đánh đổi thật giữa hai phương diện (vd tốc độ với bộ nhớ). Khi đó so bằng bảng, có con số ước lượng, đề xuất một. Không có đánh đổi thì trình một phương án. Riêng kiến trúc thì luôn có bảng lợi và hại ở mục 4.
+Thứ tự ưu tiên và khi nào đưa 2 phương án: theo nguyên tắc chung. Khi đưa 2 phương án thì so bằng bảng, có con số ước lượng, đề xuất một. Riêng kiến trúc thì luôn có bảng lợi và hại ở mục 4.
 
 ## 6. Cân theo cỡ việc
 Thiết kế dài ngắn theo độ khó của bài toán:

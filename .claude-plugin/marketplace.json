@@ -1,16 +1,18 @@
 {
   "name": "noal-drm-plugins",
-  "owner": { "name": "noal.drm" },
+  "owner": {
+    "name": "noal.drm"
+  },
   "metadata": {
     "description": "Kho plugin của noal.drm. Cài: /plugin marketplace add <đường dẫn hoặc repo>, rồi /plugin install bo-chuan@noal-drm-plugins",
-    "version": "0.7.0"
+    "version": "0.10.0"
   },
   "plugins": [
     {
       "name": "bo-chuan",
       "source": "./plugins/bo-chuan",
-      "description": "Bản sao năng lực lập trình web của người quản lý. Bản nền: nguyên tắc chung và luật cứng; skill được thêm dần, mỗi skill có bộ đề kiểm tra.",
-      "version": "0.7.0"
+      "description": "Bản sao năng lực lập trình web của người quản lý: nguyên tắc chung nạp vào mọi phiên, 2 luật cứng, 8 skill từ làm rõ yêu cầu đến phát hành, agent reviewer. Mỗi skill có bộ đề kiểm tra.",
+      "version": "0.10.0"
     }
   ]
 }

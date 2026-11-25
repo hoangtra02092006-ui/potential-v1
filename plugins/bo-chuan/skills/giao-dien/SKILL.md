@@ -19,7 +19,7 @@ Xác định web thuộc loại nào trước khi vẽ bất cứ thứ gì:
 
 3D, WebGL, hiệu ứng nặng: hợp với sản phẩm công nghệ, phần mềm, thiết bị, game, sản phẩm thời trang cần xoay xem. Luôn là **đề xuất** để người quản lý chọn, kèm cái giá (thời gian làm, tốc độ tải trang).
 
-Web marketing sản phẩm có những cách trình bày người quản lý thích, xem `references/trang-marketing.md` trước khi dựng. Luật của trang marketing và của taste-skill (mỗi khối chiếm một màn hình, khoảng trống lớn, ít chữ) **chỉ dành cho landing**. Áp vào web bán hàng thì web thành album ảnh: lần thử web thời trang 25/11 bị người quản lý nhận xét đúng như vậy. Web bán hàng chỉ dùng chúng cho ô chiến dịch ở đầu trang chủ.
+Web marketing sản phẩm có những cách trình bày người quản lý thích, xem `references/trang-marketing.md` trước khi dựng. Luật này và luật của taste-skill (mỗi khối một màn hình, khoảng trống lớn, ít chữ) **chỉ dành cho landing**; áp vào web bán hàng thì web thành album ảnh. Web bán hàng chỉ dùng chúng cho ô chiến dịch đầu trang chủ.
 
 ## 2. Viết DESIGN.md trước khi dựng
 Mỗi dự án có một file `DESIGN.md` ở gốc, agent nào làm giao diện cũng đọc. Mẫu ở `references/mau-design-md.md`. Cách làm:
@@ -32,7 +32,7 @@ Sau khi duyệt: mọi màn hình chỉ dùng token trong DESIGN.md, không đ�
 
 ## 3. Hình mẫu trước, code sau
 Tự nghĩ giao diện từ chữ mô tả dễ ra kiểu "đúng nhưng nhạt". Với web marketing và màn hình quan trọng nhất của mọi web, dựng theo hình mẫu:
-1. **Có 1-3 hình mẫu.** Người quản lý gửi (Pinterest, Dribbble, Behance, trang thật) thì dùng. Chưa có thì **hỏi người quản lý có hình mẫu không** (một trong tối đa 3 câu hỏi), và đề xuất luôn: **dựng thật 2-3 hướng**, mỗi hướng ghi rõ học từ trang thật nào (tên trang, bản trong awesome-design-md theo `references/chon-hinh-mau.md`), chụp ảnh để người quản lý chọn bằng mắt, không gửi 3 đường link suông. Cách này đã chạy tốt ở lần thử web thời trang.
+1. **Có 1-3 hình mẫu.** Người quản lý gửi (Pinterest, Dribbble, Behance, trang thật) thì dùng. Chưa có thì **hỏi người quản lý có hình mẫu không** (một trong tối đa 3 câu hỏi), và đề xuất luôn: **dựng thật 2-3 hướng**, mỗi hướng ghi rõ học từ trang thật nào (tên trang, bản trong awesome-design-md theo `references/chon-hinh-mau.md`), chụp ảnh để người quản lý chọn bằng mắt, không gửi 3 đường link suông.
 2. **Ảnh thiết kế trước khi code (bắt buộc với màn hình chính).** Từ hình mẫu hoặc hướng đã chọn, tạo ảnh thiết kế cho từng màn hình chính (trang chủ, danh mục, chi tiết; công cụ tạo ảnh hoặc dựng tĩnh), lưu `docs/thiet-ke-anh/`, rồi mới code theo ảnh (cách làm của image-to-code). Không code thẳng từ chữ mô tả.
 3. **Đọc hình mẫu như người thiết kế**, ghi vào DESIGN.md mục "Học từ hình mẫu": lưới và vị trí từng khối, tỷ lệ cỡ chữ lớn nhất so với nhỏ nhất, kiểu chữ (đậm, hẹp, có chân), mã màu đo từ ảnh, khoảng trống, lớp trước sau (vật thể đè lên chữ hay nằm sau chữ), chỗ nào là điểm nhấn.
 4. **Dựng lại bố cục và cách phối**, thay bằng thương hiệu, sản phẩm và nội dung của dự án. Không chép logo, tên, ảnh hay khẩu hiệu của hình mẫu.
@@ -66,7 +66,7 @@ Không cố định thư viện. Chọn cái phủ được nhu cầu mở rộn
 ## 8. Tự xem và soát trước khi đưa duyệt
 Agent phải tự nhìn giao diện, không đưa người quản lý xem bản chưa tự soát. Cách chụp ở `references/tu-soat-bang-trinh-duyet.md`.
 1. Chụp mỗi màn hình ở **390px** (điện thoại) và **1280px** (máy tính), đủ các trạng thái chính.
-2. Xem ảnh và soát **theo đúng thứ tự người quản lý nhìn**:
+2. Xem ảnh và soát **theo đúng thứ tự người quản lý nhìn**. Báo cáo soát (kể cả khi soát giao diện của agent khác) cũng xếp theo thứ tự này; lỗi nặng nhất nằm ở nhóm sau thì nêu trong một câu kết luận ở đầu, rồi vẫn đi lần lượt từ nhóm 1:
    1. **Màu sắc và phông chữ:** hài hoà, nhất quán giữa các màn, đúng DESIGN.md; dấu tiếng Việt đủ, không bị cắt.
    2. **Bố cục:** gọn gàng, có logic, lề thẳng, khoảng cách đều, thứ tự đọc tự nhiên.
    3. **Nội dung:** dễ nắm bắt, không rườm rà, không thiếu, người xem có hứng thú nhìn.
